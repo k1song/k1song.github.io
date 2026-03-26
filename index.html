@@ -66,30 +66,7 @@
 </head>
 <body>
 
-<nav class="sidebar">
-  <div class="sidebar-title"><a href="/">K1 Note</a></div>
-
-  <div class="nav-category" onclick="toggleNav(this)">
-    StockDigging <span class="arrow">&#9660;</span>
-  </div>
-  <ul class="nav-list">
-    <li class="nav-item"><a href="docs/stockdigging/rebuttal.html">비판 검토 및 대응</a></li>
-    <!-- 여기에 문서 추가 -->
-  </ul>
-
-  <!--
-  <div class="nav-category collapsed" onclick="toggleNav(this)">
-    카테고리 2 <span class="arrow">&#9660;</span>
-  </div>
-  <ul class="nav-list collapsed">
-    <li class="nav-item"><a href="#">문서 제목</a></li>
-  </ul>
-  -->
-
-  <div class="sidebar-footer">
-    <a href="https://github.com/k1song">GitHub</a>
-  </div>
-</nav>
+<nav class="sidebar"></nav>
 
 <main class="main">
   <h1>K1 Note</h1>
@@ -97,6 +74,11 @@
 
   <h2>StockDigging</h2>
   <div class="card-grid">
+    <a class="card" href="docs/stockdigging/ir.html">
+      <div class="card-title">사업 소개서 (IR)</div>
+      <div class="card-desc">투자자 성향 맞춤형 종목 스코어링 플랫폼 — 사업 모델, 검증, 제안</div>
+      <div class="card-date">2026 Q1</div>
+    </a>
     <a class="card" href="docs/stockdigging/rebuttal.html">
       <div class="card-title">외부 비판 검토 및 대응</div>
       <div class="card-desc">"StockDigging 사업화의 현실" 비판에 대한 항목별 수용/반박 정리</div>
@@ -112,12 +94,6 @@
   </div>
 </main>
 
-<script>
-function toggleNav(el) {
-  el.classList.toggle('collapsed');
-  const list = el.nextElementSibling;
-  if (list) list.classList.toggle('collapsed');
-}
-</script>
+<script src="/nav.js"></script>
 </body>
 </html>
