@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>StockDigging — 기술 아키텍처 독립 검토 보고서</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.8; display: flex; }
+
+  /* 사이드바 */
+  .sidebar {
+    width: 260px; min-height: 100vh; background: #fff; border-right: 1px solid #e2e8f0;
+    padding: 24px 16px; position: fixed; top: 0; left: 0; overflow-y: auto; z-index: 10;
+  }
+  .sidebar-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #3b82f6; }
+  .sidebar-title a { color: inherit; text-decoration: none; }
+  .nav-category { font-size: 0.8rem; font-weight: 700; color: #3b82f6; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .nav-category .arrow { font-size: 0.6rem; transition: transform 0.2s; }
+  .nav-category.collapsed .arrow { transform: rotate(-90deg); }
+  .nav-list { list-style: none; padding: 0; }
+  .nav-list.collapsed { display: none; }
+  .nav-item a { display: block; padding: 6px 12px; font-size: 0.9rem; color: #475569; text-decoration: none; border-radius: 6px; transition: all 0.15s; }
+  .nav-item a:hover { background: #e2e8f0; color: #1e293b; }
+  .nav-item a.active { background: #dbeafe; color: #1e40af; font-weight: 500; }
+  .sidebar-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; }
+  .sidebar-footer a { color: #64748b; text-decoration: none; }
+
+  .page-body { margin-left: 260px; flex: 1; min-width: 0; }
+  .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+  @media (max-width: 768px) { .sidebar { display: none; } .page-body { margin-left: 0; } }
+
+  /* 헤더 */
+  .hero { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 48px 24px; text-align: center; margin-bottom: 40px; }
+  .hero h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 8px; }
+  .hero p { color: #94a3b8; font-size: 1rem; }
+  .hero .divider { width: 50px; height: 2px; background: #3b82f6; margin: 20px auto; }
+  .hero .meta { font-size: 0.8rem; color: #64748b; margin-top: 16px; }
+
+  /* 챕터 */
+  h2.chapter { font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-top: 48px; margin-bottom: 8px;
+    padding-bottom: 8px; border-bottom: 3px solid #3b82f6; }
+  h3.section { font-size: 1.15rem; font-weight: 700; color: #1e40af; margin: 32px 0 12px; }
+  h4.subsection { font-size: 1rem; font-weight: 700; color: #334155; margin: 20px 0 8px; }
+
+  p { margin-bottom: 12px; }
+  strong { font-weight: 700; }
+
+  /* 박스 — 심각도별 색상 */
+  .box { padding: 16px 20px; border-radius: 8px; margin: 16px 0; border-left: 4px solid; font-size: 0.95rem; }
+  .box-red { background: #fef2f2; border-color: #dc2626; color: #991b1b; }
+  .box-amber { background: #fffbeb; border-color: #d97706; color: #92400e; }
+  .box-green { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+  .box-blue { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
+  .box-gray { background: #f1f5f9; border-color: #94a3b8; color: #475569; }
+  .box-label { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+
+  /* 테이블 */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.9rem; }
+  th { background: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 8px 12px; border: 1px solid #e2e8f0; }
+  td { padding: 8px 12px; border: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+
+  ul { margin: 8px 0 16px 20px; }
+  li { margin-bottom: 6px; }
+
+  /* 다이어그램 */
+  pre.diagram {
+    background: #0f172a; color: #e2e8f0; padding: 20px; border-radius: 8px;
+    font-size: 0.78rem; line-height: 1.5; overflow-x: auto; margin: 16px 0 24px;
+    font-family: 'Courier New', monospace; white-space: pre;
+  }
+  pre.diagram .hl-blue { color: #60a5fa; }
+  pre.diagram .hl-green { color: #4ade80; }
+  pre.diagram .hl-amber { color: #fbbf24; }
+  pre.diagram .hl-red { color: #f87171; }
+
+  /* 뱃지 */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+  .badge-ok { background: #dcfce7; color: #166534; }
+  .badge-warn { background: #fef3c7; color: #92400e; }
+  .badge-crit { background: #fee2e2; color: #991b1b; }
+  .badge-info { background: #dbeafe; color: #1e40af; }
+  .badge-legacy { background: #f1f5f9; color: #64748b; }
+
+  .footer { text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+
+  /* 코드 인라인 */
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; color: #dc2626; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar"></nav>
+
+<div class="page-body">
+<div class="hero">
+  <h1>StockDigging</h1>
+  <p>기술 아키텍처 독립 검토 보고서</p>
+  <div class="divider"></div>
+  <div class="meta">2026 Q1 &nbsp;|&nbsp; 4인 전문가 독립 검토 &nbsp;|&nbsp; 내부 기술 실사</div>
+</div>
+
+<div class="container">
+
+<p>본 문서는 StockDigging 시스템의 기술 아키텍처를 4개 전문 영역에서 독립적으로 검토한 결과이다. 각 전문가는 해당 영역의 현황을 진단하고, 문제점과 개선 권고를 제시한다. 최종 장에서 전체 항목을 분류표와 로드맵으로 종합한다.</p>
+
+<div class="box box-blue">
+  <div class="box-label">검토 범위</div>
+  <strong>검토 대상:</strong> 데이터베이스 6개, 수집 스크립트 41개, 스코어링 엔진, 캐시 시스템, 크론 자동화, 서버 인프라<br>
+  <strong>검토 시점:</strong> 2026년 3월 26일 기준 운영 환경<br>
+  <strong>검토 목적:</strong> 공동 창업자 미팅을 위한 기술 자산 실사 및 기술 부채 식별
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch1">1. 현재 시스템 전체 구조도</h2>
+
+<h3 class="section">1-1. 데이터베이스 구성</h3>
+
+<table>
+  <tr><th>DB 파일</th><th>용량</th><th>역할</th><th>접근 방식</th><th>테이블 수</th></tr>
+  <tr><td><code>stockpulse.db</code></td><td>2.1 GB</td><td>메인 DB (종목, 가격, 재무, 밸류에이션, 기술적 지표)</td><td>SQLAlchemy ORM</td><td>6개</td></tr>
+  <tr><td><code>competition.db</code></td><td>1.1 GB</td><td>모의투자 대회 (시즌, 참가자, 일일 스냅샷)</td><td>Raw SQL</td><td>10개</td></tr>
+  <tr><td><code>arena.db</code></td><td>248 KB</td><td>아레나 기능 (대회 변형)</td><td>Raw SQL</td><td>5개</td></tr>
+  <tr><td><code>showcase.db</code></td><td>272 KB</td><td>picks.html 종목 추천 데이터</td><td>Raw SQL</td><td>4개</td></tr>
+  <tr><td><code>users.db</code></td><td>364 KB</td><td>사용자 계정, 포트폴리오, 결제, 퀴즈 결과</td><td>Raw SQL</td><td>7개</td></tr>
+  <tr><td><code>articles.db</code></td><td>20 KB</td><td>기사/콘텐츠 데이터</td><td>Raw SQL</td><td>1개</td></tr>
+</table>
+
+<h3 class="section">1-2. 시스템 아키텍처 다이어그램</h3>
+
+<pre class="diagram">
+ +---------------------------------------------------------------------------+
+ |                         외부 데이터 소스                                   |
+ +---------------------------------------------------------------------------+
+ | DART API   | Naver Finance | yfinance   | FMP API    | KRX/NASDAQ        |
+ | (공식,무료) | (비공식,무료)  | (비공식)   | (유료$79/yr)| (종목목록)         |
+ +------+-----+------+--------+-----+------+-----+------+------+------------+
+        |            |              |            |             |
+        v            v              v            v             v
+ +---------------------------------------------------------------------------+
+ |                     수집 스크립트 (collectors/)                             |
+ +---------------------------------------------------------------------------+
+ | kr/price.py      kr/valuation.py     us/price.py      us/financial.py    |
+ | kr/financial.py  kr/stock_list.py    us/stock_list.py  calibrate.py      |
+ | calc_kr_valuations.py + merge_kr_valuations.py (2단계 밸류에이션)          |
+ +-----+----------------------------+----------------------------------------+
+       |                            |
+       v                            v
+ +----------------------------+  +----------------------------+
+ |    stockpulse.db (2.1GB)   |  |    competition.db (1.1GB)  |
+ |----------------------------|  |----------------------------|
+ | stocks          (9,379)    |  | seasons                    |
+ | daily_prices (5,200,000+)  |  | contestants                |
+ | financials    (120,000+)   |  | contests / entries / picks |
+ | valuations    (190,000+)   |  | snapshots / daily_scores   |
+ | technical_indicators       |  | optimal_strategies         |
+ | batch_logs                 |  | articles / likes / comments|
+ +-------------+--------------+  +----------------------------+
+               |
+               v
+ +---------------------------------------------------------------------------+
+ |                      스코어링 엔진 (scoring.py, 1,907줄)                   |
+ +---------------------------------------------------------------------------+
+ | 6 스타일 x 5 지표 = 30개 지표 계산                                         |
+ | 입력: daily_prices + technical_indicators + valuations + financials + stocks|
+ | 출력: ScoreDetail(name, score 0~20, reason, sort_value) per indicator      |
+ | 캘리브레이션: scoring_calibration.json (백분위 기반)                        |
+ +-----+---------------------------------------------------------------------+
+       |
+       v
+ +----------------------------+
+ |  score_cache.pkl (17MB)    |
+ |  SCHEMA_VERSION = "v9"     |
+ |  warm_cache: ~5.5분        |
+ +-------------+--------------+
+               |
+               v
+ +---------------------------------------------------------------------------+
+ |                  FastAPI 백엔드 (quick_server.py)                          |
+ +---------------------------------------------------------------------------+
+ | 109개 API 엔드포인트                                                       |
+ | /api/screening/weighted    /api/stock/{code}    /api/competition/*        |
+ | /api/user/*                /api/admin/*          /api/picks/*             |
+ +-----+---------------------------------------------------------------------+
+       |
+       v
+ +---------------------------------------------------------------------------+
+ |                  프론트엔드 (frontend/, 멀티페이지 HTML)                    |
+ +---------------------------------------------------------------------------+
+ | index.html    top100.html   stock.html    test.html    result.html       |
+ | strategy.html types.html    picks.html    contest.html admin.html        |
+ | research.html showcase.html arena.html                                   |
+ +---------------------------------------------------------------------------+
+</pre>
+
+<h3 class="section">1-3. 크론 자동화 스케줄</h3>
+
+<table>
+  <tr><th>스케줄</th><th>스크립트</th><th>내용</th><th>상태</th></tr>
+  <tr><td>매일 07:00 (월~토)</td><td><code>auto_daily.sh</code></td><td>KR+US: 가격 &rarr; 기술적 지표 &rarr; 밸류에이션 &rarr; merge</td><td><span class="badge badge-ok">운영 중</span></td></tr>
+  <tr><td>매일 21:30 (화~토)</td><td><code>auto_daily.sh</code></td><td>US 장마감 후: 가격 + 기술적 지표</td><td><span class="badge badge-ok">운영 중</span></td></tr>
+  <tr><td>매일 07:00 + 17:00</td><td><code>auto_showcase.sh</code></td><td>showcase.db 데이터 갱신</td><td><span class="badge badge-ok">운영 중</span></td></tr>
+  <tr><td>매월 1일 00:00</td><td><code>auto_monthly.sh</code></td><td>종목목록 최신화 + 스코어링 캘리브레이션</td><td><span class="badge badge-ok">운영 중</span></td></tr>
+  <tr><td>4/1, 5/16, 8/15, 11/15</td><td><code>auto_quarterly.sh</code></td><td>DART 분기 재무제표 수집</td><td><span class="badge badge-crit">미등록</span></td></tr>
+</table>
+
+<div class="box box-red">
+  <div class="box-label">즉시 조치 필요</div>
+  <code>auto_quarterly.sh</code>가 서버 크론탭에 등록되어 있지 않다. DART 분기 재무제표 수집이 수동으로만 가능하며, 누락 시 밸류에이션 데이터가 오래된 상태로 유지된다.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch2">2. 전문가 A: 데이터베이스 설계 검토</h2>
+
+<div class="box box-blue">
+  <div class="box-label">검토자 프로필</div>
+  <strong>전문가 A</strong> — 데이터베이스 설계/운영 15년 경력. PostgreSQL, MySQL, SQLite 환경에서의 대규모 금융 데이터 관리 전문.
+</div>
+
+<h3 class="section">2-1. 현황 요약</h3>
+<p>현재 시스템은 6개의 독립 SQLite 파일로 구성되어 있다. 메인 DB(<code>stockpulse.db</code>)만 SQLAlchemy ORM을 사용하고, 나머지 5개는 모두 raw SQL로 접근한다.</p>
+
+<h4 class="subsection">stockpulse.db (2.1GB) — 6개 테이블</h4>
+<table>
+  <tr><th>테이블</th><th>추정 레코드</th><th>역할</th><th>비고</th></tr>
+  <tr><td><code>stocks</code></td><td>~9,400</td><td>종목 마스터 (KR 2,663 + US 6,716)</td><td>market_cap 컬럼 KR만 유효</td></tr>
+  <tr><td><code>daily_prices</code></td><td>~5,200,000</td><td>일별 OHLCV</td><td>가장 큰 테이블</td></tr>
+  <tr><td><code>financials</code></td><td>~120,000</td><td>분기 재무제표</td><td>DART + yfinance 혼합</td></tr>
+  <tr><td><code>valuations</code></td><td>~190,000</td><td>밸류에이션 (PER/PBR/ROE 등)</td><td>계산값+수집값 혼재</td></tr>
+  <tr><td><code>technical_indicators</code></td><td>~2,600</td><td>기술적 지표 (RSI, MACD 등)</td><td>일별 갱신</td></tr>
+  <tr><td><code>batch_logs</code></td><td>~500</td><td>배치 실행 로그</td><td>-</td></tr>
+</table>
+
+<h4 class="subsection">competition.db (1.1GB) — 10개 테이블</h4>
+<table>
+  <tr><th>테이블</th><th>역할</th></tr>
+  <tr><td><code>seasons</code></td><td>대회 시즌 정의</td></tr>
+  <tr><td><code>contestants</code></td><td>참가자 (봇 포함)</td></tr>
+  <tr><td><code>contests</code></td><td>개별 대회</td></tr>
+  <tr><td><code>entries</code></td><td>대회 참가 내역</td></tr>
+  <tr><td><code>picks</code></td><td>종목 선택</td></tr>
+  <tr><td><code>snapshots</code></td><td>일일 포트폴리오 스냅샷</td></tr>
+  <tr><td><code>optimal_strategies</code></td><td>최적 전략 계산 결과</td></tr>
+  <tr><td><code>daily_scores</code></td><td>일일 스코어 기록</td></tr>
+  <tr><td><code>articles</code></td><td>대회 관련 기사</td></tr>
+  <tr><td><code>article_likes</code> / <code>article_comments</code></td><td>기사 반응</td></tr>
+</table>
+
+<h4 class="subsection">나머지 4개 DB</h4>
+<table>
+  <tr><th>DB</th><th>테이블 수</th><th>역할</th><th>상태</th></tr>
+  <tr><td><code>arena.db</code> (248KB)</td><td>5개</td><td>아레나 대회 변형</td><td><span class="badge badge-info">competition.db과 기능 중복 가능성</span></td></tr>
+  <tr><td><code>showcase.db</code> (272KB)</td><td>4개</td><td>picks.html 종목 추천</td><td><span class="badge badge-ok">운영 중</span></td></tr>
+  <tr><td><code>users.db</code> (364KB)</td><td>7개</td><td>사용자 관리 (계정, 결제, 퀴즈)</td><td><span class="badge badge-ok">운영 중</span></td></tr>
+  <tr><td><code>articles.db</code> (20KB)</td><td>1개</td><td>콘텐츠 기사</td><td><span class="badge badge-info">competition.db articles와 중복?</span></td></tr>
+</table>
+
+<h3 class="section">2-2. 식별된 문제점</h3>
+
+<div class="box box-red">
+  <div class="box-label">심각 — SQLite 2.1GB 단일 파일의 구조적 한계</div>
+  <p>SQLite는 WAL 모드에서도 동시 쓰기가 1개로 제한된다. <code>stockpulse.db</code>의 <code>daily_prices</code> 테이블이 520만 레코드를 담고 있어, 수집 스크립트가 실행되는 동안 API 응답 지연 또는 <code>database is locked</code> 에러가 발생할 수 있다.</p>
+  <p>또한 2.1GB 단일 파일은 백업 시 전체 복사가 필요하고, 네트워크 전송(SFTP)에 수십 분이 소요된다.</p>
+</div>
+
+<div class="box box-red">
+  <div class="box-label">심각 — DB 6개 분산으로 트랜잭션 일관성 불가</div>
+  <p>예를 들어, 사용자(<code>users.db</code>)가 대회(<code>competition.db</code>)에 참가할 때 두 DB에 동시에 쓰기가 필요하지만, SQLite 간 트랜잭션은 불가능하다. 한쪽만 성공하면 데이터 불일치가 발생한다.</p>
+  <p>또한 <code>stockpulse.db</code>의 종목 데이터와 <code>competition.db</code>의 종목 선택을 조인하려면 애플리케이션 레벨에서 수동 조합해야 하며, 이는 코드 복잡도를 높인다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — ORM/Raw SQL 이중 관리</div>
+  <p><code>stockpulse.db</code>만 SQLAlchemy ORM을 사용하고, 나머지 5개 DB는 모두 <code>sqlite3</code> 모듈로 raw SQL을 직접 작성한다. 이는 유지보수 시 두 가지 패턴을 동시에 관리해야 하는 부담을 준다. 스키마 변경 시 ORM 마이그레이션과 raw SQL ALTER를 각각 별도로 수행해야 한다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — valuations 테이블의 데이터 출처 혼재</div>
+  <p><code>valuations</code> 테이블에는 두 종류의 데이터가 혼재한다:</p>
+  <ul>
+    <li><strong>수집값:</strong> Naver Finance에서 직접 가져온 당일 PER/PBR/EPS/BPS (<code>collectors/kr/valuation.py</code>)</li>
+    <li><strong>계산값:</strong> <code>calc_kr_valuations.py</code>에서 <code>financials</code> 테이블 + 연말 주가로 재계산한 historical PER/PBR/ROE</li>
+  </ul>
+  <p>동일 테이블에 출처가 다른 데이터가 섞이면, 특정 시점의 PER이 "라이브 수집"인지 "재계산"인지 구분이 불가능하다. 백테스트와 라이브 스코어링이 서로 다른 데이터를 참조할 위험이 있다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — market_cap 이중 위치</div>
+  <p><code>market_cap</code> 값이 두 곳에 존재한다:</p>
+  <ul>
+    <li><strong>KR 종목:</strong> <code>stocks.market_cap</code>에서 로드 (원화)</li>
+    <li><strong>US 종목:</strong> <code>valuations.market_cap</code>에서 raw SQL로 별도 조회 (달러)</li>
+  </ul>
+  <p><code>scoring.py</code>의 <code>_load_valuations()</code>에서 KR일 때만 <code>stocks</code> 테이블을 추가 조회하는 분기 로직이 존재한다. ORM 모델에 <code>market_cap</code> 필드가 통일되어 있지 않아, 새 개발자가 어느 테이블을 참조해야 하는지 코드를 읽어야만 알 수 있다.</p>
+</div>
+
+<div class="box box-blue">
+  <div class="box-label">확인 필요 — arena.db와 competition.db 스키마 중복</div>
+  <p><code>arena.db</code>(5개 테이블)와 <code>competition.db</code>(10개 테이블)가 유사한 스키마(시즌, 참가자, 종목 선택, 스냅샷)를 갖고 있으나 별도 파일로 관리된다. 기능적 차이가 충분히 크지 않다면 하나로 통합하는 것이 바람직하다.</p>
+</div>
+
+<div class="box box-blue">
+  <div class="box-label">확인 필요 — articles.db와 competition.db articles 중복</div>
+  <p><code>articles.db</code>(1개 테이블)와 <code>competition.db</code>의 <code>articles</code>/<code>article_likes</code>/<code>article_comments</code> 테이블이 각각 별도로 존재한다. 기사 데이터가 두 곳에 분산되어 있으면 동기화 문제가 발생할 수 있다.</p>
+</div>
+
+<h3 class="section">2-3. 권고사항</h3>
+
+<table>
+  <tr><th>우선순위</th><th>권고</th><th>기대 효과</th></tr>
+  <tr><td><span class="badge badge-crit">P1</span></td><td>PostgreSQL 통합 계획 수립 (6개 DB &rarr; 1개 인스턴스)</td><td>트랜잭션 일관성, 동시 접속 해소, 조인 가능</td></tr>
+  <tr><td><span class="badge badge-crit">P1</span></td><td>valuations 테이블을 <code>valuations_live</code>(수집)와 <code>valuations_calc</code>(계산)로 분리</td><td>데이터 출처 명확화, 백테스트 신뢰도 향상</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>market_cap 단일 출처화 (stocks 테이블로 통일, US 포함)</td><td>scoring.py 분기 로직 제거</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>arena.db + competition.db 통합 가능성 검토</td><td>스키마 중복 제거, 유지보수 단순화</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>ORM 전환 또는 raw SQL 통일 (하나의 패턴으로)</td><td>유지보수 일관성</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch3">3. 전문가 B: 데이터 파이프라인 검토</h2>
+
+<div class="box box-blue">
+  <div class="box-label">검토자 프로필</div>
+  <strong>전문가 B</strong> — 데이터 엔지니어링 12년 경력. ETL/ELT 파이프라인, 데이터 품질 관리, 금융 데이터 수집 자동화 전문.
+</div>
+
+<h3 class="section">3-1. 수집 스크립트 분류</h3>
+<p>프로젝트에 존재하는 41개 수집 관련 스크립트를 역할별로 분류한 결과:</p>
+
+<h4 class="subsection">핵심 스크립트 — 매일 사용 (7개)</h4>
+<table>
+  <tr><th>스크립트</th><th>주기</th><th>데이터 소스</th><th>대상</th></tr>
+  <tr><td><code>collectors/kr/price.py</code></td><td>매일</td><td>Naver Finance</td><td>KR 일별 가격</td></tr>
+  <tr><td><code>collectors/kr/valuation.py</code></td><td>매일</td><td>Naver Finance API</td><td>KR PER/PBR/EPS/BPS/배당</td></tr>
+  <tr><td><code>collectors/us/price.py</code></td><td>매일</td><td>yfinance</td><td>US 일별 가격</td></tr>
+  <tr><td><code>calc_kr_valuations.py</code></td><td>매일</td><td>내부 계산</td><td>KR ROE/부채비율/영업이익률</td></tr>
+  <tr><td><code>merge_kr_valuations.py</code></td><td>매일</td><td>내부 병합</td><td>KR 밸류에이션 10개 필드 통합</td></tr>
+  <tr><td><code>calculators/technical.py</code></td><td>매일</td><td>내부 계산</td><td>RSI/MACD/BB 등 기술적 지표</td></tr>
+  <tr><td><code>calibrate_scoring.py</code></td><td>월간</td><td>내부 계산</td><td>스코어링 백분위 보정</td></tr>
+</table>
+
+<h4 class="subsection">핵심 스크립트 — 분기/월간 (5개)</h4>
+<table>
+  <tr><th>스크립트</th><th>주기</th><th>데이터 소스</th><th>대상</th></tr>
+  <tr><td><code>collectors/kr/financial.py</code></td><td>분기</td><td>DART API</td><td>KR 분기 재무제표</td></tr>
+  <tr><td><code>collectors/us/financial.py</code></td><td>분기</td><td>yfinance</td><td>US 분기 재무제표</td></tr>
+  <tr><td><code>collectors/kr/stock_list.py</code></td><td>월간</td><td>KRX</td><td>KR 종목 목록 갱신</td></tr>
+  <tr><td><code>collectors/us/stock_list.py</code></td><td>월간</td><td>NASDAQ</td><td>US 종목 목록 갱신</td></tr>
+  <tr><td><code>rebuild_valuations_quarterly.py</code></td><td>분기</td><td>내부 재계산</td><td>historical 밸류에이션 재구축</td></tr>
+</table>
+
+<h4 class="subsection">레거시/1회성 스크립트 — 정리 대상 (29개)</h4>
+<table>
+  <tr><th>분류</th><th>스크립트</th><th>비고</th></tr>
+  <tr><td>구버전 수집기</td><td><code>collect_kr_fnguide.py</code>, <code>collect_kr_fy2022_dart.py</code>, <code>collect_2022_valuations.py</code>, <code>collect_kr_valuations_krx.py</code>, <code>collect_kr_dividends_dart.py</code></td><td>현재 collectors/ 구조로 대체됨</td></tr>
+  <tr><td>구버전 US 수집기</td><td><code>collect_us_financials_sec.py</code>, <code>collect_us_fmp.py</code>, <code>collect_us_fmp_annual.py</code>, <code>collect_us_prices_fmp.py</code>, <code>collect_us_shares_fmp.py</code>, <code>collect_us_financials_quarterly_yf.py</code></td><td>FMP/SEC 시도 흔적, 현재 yfinance 사용</td></tr>
+  <tr><td>파이프라인 래퍼</td><td><code>pipeline_final.py</code>, <code>pipeline_kr_expand.py</code>, <code>pipeline_kr_full_recollect.py</code>, <code>pipeline_overnight.py</code>, <code>pipeline_us_expand.py</code></td><td>auto_daily.sh로 대체됨</td></tr>
+  <tr><td>체인 스크립트</td><td><code>chain_shares_then_kr.py</code>, <code>chain_us_then_kr.py</code></td><td>1회성 데이터 보정용</td></tr>
+  <tr><td>분석/백테스트</td><td><code>backtest_bot_cohort.py</code>, <code>backtest_portfolio_tuning.py</code>, <code>sensitivity_*.py</code> (5개), <code>step1_atr_optimization.py</code> 등</td><td>연구 목적, 운영과 무관</td></tr>
+  <tr><td>관리 도구</td><td><code>bulk_add_bots*.py</code> (5개), <code>reset_contestants_120.py</code>, <code>backfill_*.py</code> (3개)</td><td>1회성 데이터 마이그레이션</td></tr>
+  <tr><td>DART zip 임포터</td><td><code>import_dart_bulk.py</code></td><td>초기 DB 구축용, 200+ zip 파일 처리</td></tr>
+</table>
+
+<div class="box box-gray">
+  <div class="box-label">정리 대상</div>
+  41개 스크립트 중 <strong>핵심 12개</strong>만 실제 운영에 사용되고, <strong>29개는 레거시</strong>이다. <code>scripts/collection/</code> 디렉토리에 모든 스크립트가 평탄하게 나열되어 있어, 신규 개발자가 어떤 것을 사용해야 하는지 파악하기 어렵다. <code>db/</code> 폴더에는 200개 이상의 DART zip 파일이 수 GB 규모로 적재되어 있다.
+</div>
+
+<h3 class="section">3-2. 데이터 소스 비대칭 문제</h3>
+
+<table>
+  <tr><th>항목</th><th>KR</th><th>US</th><th>위험도</th></tr>
+  <tr><td>가격 데이터</td><td>Naver Finance (비공식, 안정)</td><td>yfinance (비공식, 불안정)</td><td><span class="badge badge-warn">중간</span></td></tr>
+  <tr><td>밸류에이션</td><td>Naver Finance API (비공식, 안정)</td><td>yfinance (비공식, 불안정)</td><td><span class="badge badge-warn">중간</span></td></tr>
+  <tr><td>재무제표</td><td>DART API (공식, 무료, 안정)</td><td>yfinance (비공식, 불안정)</td><td><span class="badge badge-warn">중간</span></td></tr>
+  <tr><td>종목목록</td><td>KRX (공식)</td><td>NASDAQ (공식)</td><td><span class="badge badge-ok">낮음</span></td></tr>
+  <tr><td>보조 데이터</td><td>-</td><td>FMP (유료 $79/yr, 250콜/일)</td><td><span class="badge badge-crit">높음</span></td></tr>
+</table>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — US 데이터 의존성</div>
+  <p>US 데이터의 3대 축(가격, 밸류에이션, 재무)이 모두 yfinance에 의존한다. yfinance는 비공식 API이며:</p>
+  <ul>
+    <li>Yahoo Finance의 웹 구조 변경 시 즉시 깨질 수 있음 (과거 3회 이상 발생)</li>
+    <li>Rate limiting이 예고 없이 변경됨</li>
+    <li>SLA/보장 없음, 상업적 사용에 대한 약관 모호</li>
+  </ul>
+  <p>FMP API는 유료($79/년)이지만 무료 250콜/일 제한으로 6,700개 종목 전체를 커버하지 못한다. 상용 API(Polygon.io, Alpha Vantage Pro 등) 전환이 필요하다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — KR 밸류에이션 2단계 계산의 복잡도</div>
+  <p>KR 밸류에이션은 2단계로 처리된다:</p>
+  <ol>
+    <li><code>calc_kr_valuations.py</code>: DART 재무 데이터로 ROE, 부채비율, 영업이익률 계산</li>
+    <li><code>merge_kr_valuations.py</code>: Naver 수집값(PER/PBR)과 계산값(ROE 등)을 10개 필드로 병합</li>
+  </ol>
+  <p>이 2단계 파이프라인은 실행 순서가 중요하며, 중간에 실패하면 부분적으로만 갱신된 데이터가 DB에 남을 수 있다. 하나의 스크립트로 통합하거나, 트랜잭션 보장이 필요하다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 생존편향 통제 불충분</div>
+  <p><code>stocks</code> 테이블의 <code>is_active</code> 플래그만으로 상장폐지/합병/분할 종목을 관리하고 있다. 그러나:</p>
+  <ul>
+    <li>상장폐지 이전의 가격 데이터가 존재하는지 보장이 없음</li>
+    <li>합병/분할 시 가격 소급 조정(adjusted close) 미적용 가능성</li>
+    <li>is_active가 "언제" 비활성화되었는지 타임스탬프 없음</li>
+    <li>백테스트에서 "당시 활성 종목만" 필터링하는 메커니즘 부재</li>
+  </ul>
+</div>
+
+<h3 class="section">3-3. 권고사항</h3>
+
+<table>
+  <tr><th>우선순위</th><th>권고</th><th>기대 효과</th></tr>
+  <tr><td><span class="badge badge-crit">P0</span></td><td>레거시 스크립트 29개를 <code>scripts/_archive/</code>로 이동 또는 삭제</td><td>코드 가독성, 온보딩 시간 단축</td></tr>
+  <tr><td><span class="badge badge-crit">P0</span></td><td>db/ 폴더 DART zip 파일 200+개 정리 (외부 스토리지 이동)</td><td>저장 공간 수 GB 확보</td></tr>
+  <tr><td><span class="badge badge-crit">P1</span></td><td>US 상용 데이터 API 전환 (Polygon.io 또는 Alpha Vantage Pro)</td><td>yfinance 의존도 제거, SLA 확보</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>KR 밸류에이션 2단계 &rarr; 1단계 통합</td><td>파이프라인 단순화, 실패 시 원자성 보장</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>is_active에 비활성화 일자 컬럼 추가, 백테스트 시 시점별 필터링</td><td>생존편향 완화</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch4">4. 전문가 C: 스코어링 엔진 검토</h2>
+
+<div class="box box-blue">
+  <div class="box-label">검토자 프로필</div>
+  <strong>전문가 C</strong> — 퀀트 엔지니어 10년 경력. 팩터 모델, 알파 생성, 리스크 관리 시스템 설계 전문.
+</div>
+
+<h3 class="section">4-1. 현황 요약</h3>
+
+<p><code>scoring.py</code>(1,907줄) 단일 파일에 전체 스코어링 로직이 포함되어 있다. 6개 투자 스타일, 각 5개 지표, 총 30개 지표를 계산한다.</p>
+
+<table>
+  <tr><th>스타일</th><th>front_key</th><th>지표 수</th><th>지표</th></tr>
+  <tr><td>안정성장 (safe)</td><td><code>safe_</code></td><td>5</td><td>변동성, MDD, 추세, 거래량안정성, 52주고점</td></tr>
+  <tr><td>모멘텀 (aggressive)</td><td><code>agg_</code></td><td>5</td><td>가격모멘텀, RSI강세, MACD, 거래량급증, 신고가</td></tr>
+  <tr><td>가치발굴 (value)</td><td><code>val_</code></td><td>5</td><td>PER, PBR, RSI과매도, 수익성안전마진, 거래량바닥</td></tr>
+  <tr><td>배당수익 (dividend)</td><td><code>div_</code></td><td>5</td><td>배당수익률, 배당성향, MDD, 추세안정, 거래량안정성</td></tr>
+  <tr><td>우량주 (moat)</td><td><code>moat_</code></td><td>5</td><td>ROE, 부채비율, 영업이익률, 대형주규모, 매출성장률</td></tr>
+  <tr><td>기술적매매 (trend)</td><td><code>tr_</code></td><td>5</td><td>골든크로스, MACD크로스, RSI반등, 거래량돌파, 볼린저하단반등</td></tr>
+</table>
+
+<h4 class="subsection">데이터 의존성 맵</h4>
+<pre class="diagram">
+  scoring.py가 참조하는 5개 테이블:
+
+  ┌─────────────┐   ┌──────────────────────┐   ┌──────────────┐
+  │   stocks     │   │    daily_prices       │   │  financials   │
+  │  (market_cap │   │  (OHLCV, 520만 rows)  │   │  (분기 재무)   │
+  │   KR only)   │   │                       │   │               │
+  └──────┬───────┘   └──────────┬────────────┘   └──────┬────────┘
+         │                      │                        │
+         │    ┌─────────────────┤                        │
+         │    │                 │                        │
+         v    v                 v                        v
+  ┌────────────────────────────────────────────────────────────┐
+  │                    scoring.py (1,907줄)                     │
+  │                                                            │
+  │  _load_valuations()  ─── KR: stocks.market_cap             │
+  │                      ─── US: valuations.market_cap (SQL)   │
+  │  _load_technical()   ─── technical_indicators              │
+  │  _build_style_score()─── 30개 지표 계산                     │
+  │  calc_price_targets()─── ATR 기반 6x3=18 파라미터           │
+  └────────────────────────────────────────────────────────────┘
+         │
+         v
+  ┌──────────────────────┐   ┌──────────────────────────────┐
+  │  technical_indicators │   │  valuations                   │
+  │  (RSI, MACD, BB 등)   │   │  (PER, PBR, ROE 등)           │
+  │                       │   │  + market_cap (US only)       │
+  └───────────────────────┘   └───────────────────────────────┘
+</pre>
+
+<h3 class="section">4-2. 식별된 문제점</h3>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 1,907줄 단일 파일의 유지보수 부담</div>
+  <p><code>scoring.py</code>에 다음이 모두 포함되어 있다:</p>
+  <ul>
+    <li>데이터 로딩 함수 (<code>_load_valuations</code>, <code>_load_technical</code> 등)</li>
+    <li>30개 지표 계산 로직 (각 20~50줄)</li>
+    <li>캘리브레이션 연동 (pct_score 호출)</li>
+    <li>KR/US 분기 로직 (시가총액, PER 기준 등)</li>
+    <li>가격 목표(ATR) 계산 (STYLE_RISK 파라미터 18세트)</li>
+    <li>캐시 관리 (pkl 저장/로드, 버전 체크)</li>
+  </ul>
+  <p>하나의 지표를 수정하려면 1,907줄 파일 전체를 이해해야 한다. 단위 테스트도 불가능한 구조이다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 캐시 워밍업 5.5분 소요</div>
+  <p><code>warm_cache</code>가 전체 종목(KR 2,663 + US 2,882)에 대해 6스타일 스코어를 일괄 계산한다:</p>
+  <ul>
+    <li>KR: ~200초 (2,663 종목 x 6 스타일)</li>
+    <li>US: ~120초 (2,882 종목 x 6 스타일)</li>
+    <li>합계: ~5.5분 (서버 재시작마다 발생)</li>
+  </ul>
+  <p>이 시간 동안 API는 캐시 없이 응답하므로, 사용자에게 느린 응답이 제공된다. 종목 수가 증가하면 선형적으로 늘어나며, 10,000종목 시 약 11분이 소요될 것으로 예상된다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 캘리브레이션 이중 구조 (백분위 + 하드코딩 fallback)</div>
+  <p>상대 지표(PER, PBR, ROE, 영업이익률, 매출성장률)는 <code>scoring_calibration.json</code>의 백분위를 우선 사용하되, 값이 없으면 하드코딩 기준으로 fallback한다. 이는:</p>
+  <ul>
+    <li>새 지표 추가 시 "캘리브레이션에 추가했는가?"를 반드시 확인해야 함</li>
+    <li>fallback과 백분위의 결과가 다를 수 있어, 캘리브레이션 파일 유무에 따라 점수가 달라짐</li>
+    <li>KR/US 시장별 기준값이 다르므로 (예: PER 기준 KR 상위 2% vs US 상위 2%), 하드코딩 fallback이 어느 시장 기준인지 모호</li>
+  </ul>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — market_cap 로딩 비일관성</div>
+  <p>동일한 <code>_load_valuations()</code> 함수 내에서:</p>
+  <ul>
+    <li>KR: ORM으로 <code>stocks</code> 테이블 조회 &rarr; raw SQL fallback</li>
+    <li>US: <code>valuations</code> ORM 모델에 market_cap 필드 없음 &rarr; raw SQL 직접 조회</li>
+  </ul>
+  <p>이 비대칭은 "KR은 stocks.market_cap 사용, US는 valuations.market_cap 사용"이라는 규칙을 코드에 하드코딩하게 만들고, CLAUDE.md에 별도 경고로 기록해야 하는 지경에 이른다.</p>
+</div>
+
+<div class="box box-blue">
+  <div class="box-label">구조적 한계 — 종가 기반 스코어링</div>
+  <p>모든 지표가 전일 종가(daily_prices의 close)를 기반으로 계산된다. 장중 스코어링(intraday scoring)으로 전환하려면:</p>
+  <ul>
+    <li>실시간 데이터 피드 연동</li>
+    <li>증분 계산 (변경된 종목만 재계산)</li>
+    <li>캐시 무효화 전략 재설계</li>
+    <li>기술적 지표 실시간 업데이트</li>
+  </ul>
+  <p>이 전환은 근본적인 아키텍처 재설계를 의미한다. 현 단계에서는 종가 기반이 적절하나, 서비스 확장 시 고려해야 한다.</p>
+</div>
+
+<h3 class="section">4-3. 긍정적 평가</h3>
+
+<div class="box box-green">
+  <div class="box-label">잘 설계된 부분</div>
+  <ul>
+    <li><strong>ScoreDetail 구조체:</strong> <code>(name, score 0~20, reason, sort_value)</code> — 점수 + 사유 + 정렬값을 하나의 단위로 관리하는 설계는 디버깅과 UI 표시 모두에 유용하다.</li>
+    <li><strong>백분위 캘리브레이션:</strong> 시장 분포가 변할 때 점수가 자동 보정되는 시스템은 장기 운영에 적합하다. 매월 1일 자동 실행도 올바른 주기이다.</li>
+    <li><strong>ATR 기반 가격 목표:</strong> 전략/기간별 18개 파라미터 세트로 변동성에 맞춘 동적 산출은 하드코딩 ±10%보다 훨씬 합리적이다.</li>
+    <li><strong>PER/PBR sanitize:</strong> 극단값(PER&lt;0.5, PER&gt;1000, PBR&lt;0.05, PBR&gt;200)을 None 처리하는 방어 로직이 있다.</li>
+    <li><strong>N/A 처리:</strong> score=-1 마커로 데이터 부재를 명시하고, <code>_build_style_score</code>에서 score&gt;=0만 합산하는 방식은 건전하다.</li>
+  </ul>
+</div>
+
+<h3 class="section">4-4. 권고사항</h3>
+
+<table>
+  <tr><th>우선순위</th><th>권고</th><th>기대 효과</th></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td><code>scoring.py</code>를 모듈 분리: <code>scoring/loader.py</code>, <code>scoring/indicators/</code>(6파일), <code>scoring/cache.py</code>, <code>scoring/targets.py</code></td><td>단위 테스트 가능, 지표별 독립 수정</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>증분 캐시 워밍업 도입 (변경된 종목만 재계산)</td><td>재시작 시간 5.5분 &rarr; 30초 이내</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>캘리브레이션 fallback 제거 (모든 지표를 백분위 기반으로)</td><td>이중 경로 제거, 점수 일관성</td></tr>
+  <tr><td><span class="badge badge-info">P3</span></td><td>market_cap 로딩 통일 (DB 레벨 정규화 후)</td><td>scoring.py 내 분기 로직 제거</td></tr>
+  <tr><td><span class="badge badge-info">P3</span></td><td>실시간 스코어링 아키텍처 설계 (이벤트 기반 증분 계산)</td><td>장중 업데이트 가능, 사용자 가치 향상</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch5">5. 전문가 D: 인프라/배포 검토</h2>
+
+<div class="box box-blue">
+  <div class="box-label">검토자 프로필</div>
+  <strong>전문가 D</strong> — DevOps/SRE 13년 경력. 클라우드 인프라, CI/CD, 컨테이너 오케스트레이션, 보안 감사 전문.
+</div>
+
+<h3 class="section">5-1. 현황 요약</h3>
+
+<table>
+  <tr><th>항목</th><th>현재 상태</th><th>비고</th></tr>
+  <tr><td>서버</td><td>Vultr VPS 단일 인스턴스 (158.247.235.58)</td><td>로드밸런서 없음</td></tr>
+  <tr><td>OS 계정</td><td>root 직접 사용</td><td>sudo 사용자 미분리</td></tr>
+  <tr><td>웹서버</td><td>nginx (리버스 프록시) &rarr; uvicorn (FastAPI)</td><td>nginx에서 유지보수 모드 제어</td></tr>
+  <tr><td>DB 배포</td><td>로컬 gzip &rarr; paramiko SFTP &rarr; 서버 swap</td><td><code>upload_db.py</code>에 비밀번호 하드코딩</td></tr>
+  <tr><td>코드 배포</td><td>SSH &rarr; git pull &rarr; systemctl restart</td><td>수동, CI/CD 없음</td></tr>
+  <tr><td>CDN</td><td>없음 (Cloudflare DNS만 사용)</td><td>정적 자산 미캐싱</td></tr>
+  <tr><td>모니터링</td><td>없음</td><td>크론 실패 알림 없음</td></tr>
+  <tr><td>백업</td><td><code>upload_db.py</code>가 교체 전 .bak 생성</td><td>자동 백업 스케줄 없음</td></tr>
+  <tr><td>로그</td><td><code>/var/www/stockdigging/logs/</code></td><td>수동 확인만, 로그 로테이션 미확인</td></tr>
+  <tr><td>시크릿</td><td><code>.env</code> 파일에 평문 저장</td><td>Vault/Secret Manager 미사용</td></tr>
+</table>
+
+<h3 class="section">5-2. 식별된 문제점</h3>
+
+<div class="box box-red">
+  <div class="box-label">즉시 조치 — 비밀번호 하드코딩</div>
+  <p><code>upload_db.py</code>에 서버 SSH 비밀번호가 평문으로 하드코딩되어 있다. 이 파일이 Git 저장소에 포함되어 있다면(확인 필요), 저장소에 접근 가능한 누구든 서버에 SSH 접속할 수 있다.</p>
+  <p><strong>즉시 조치:</strong></p>
+  <ul>
+    <li>비밀번호를 환경변수 또는 <code>.env</code>로 이동</li>
+    <li>가능하면 SSH 키 인증으로 전환</li>
+    <li>git history에서 비밀번호 제거 (git filter-branch 또는 BFG)</li>
+  </ul>
+</div>
+
+<div class="box box-red">
+  <div class="box-label">즉시 조치 — auto_quarterly.sh 서버 미등록</div>
+  <p>DART 분기 재무제표를 수집하는 <code>auto_quarterly.sh</code>가 서버 크론탭에 등록되어 있지 않다(MEMORY.md 명시). 분기 재무제표 수집을 사람이 기억해서 수동 실행해야 하며, 누락 시 3개월간 오래된 재무 데이터로 스코어링이 수행된다.</p>
+</div>
+
+<div class="box box-red">
+  <div class="box-label">즉시 조치 — root 계정 직접 사용</div>
+  <p>서버에 root 계정으로 직접 접속하여 서비스를 운영하고 있다. root 권한으로 실행 중인 프로세스가 취약점에 노출되면 전체 시스템이 위험하다. 또한 실수로 시스템 파일을 삭제/변경할 위험이 높다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 단일 장애점(SPOF)</div>
+  <p>전체 서비스가 Vultr VPS 1대에서 운영된다:</p>
+  <ul>
+    <li>서버 장애 시 전체 서비스 중단 (복구 시간 = 수동 대응 시간)</li>
+    <li>DB, API, 크론이 모두 같은 인스턴스에서 실행</li>
+    <li>크론 수집 작업이 DB에 쓰기하는 동안 API 응답 지연 가능</li>
+    <li>Vultr 데이터센터 장애 시 복구 수단 없음</li>
+  </ul>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — CI/CD 부재</div>
+  <p>코드 배포 프로세스:</p>
+  <ol>
+    <li>로컬에서 코드 수정</li>
+    <li>SSH 접속</li>
+    <li>git pull</li>
+    <li>systemctl restart stockdigging</li>
+    <li>(스코어링 변경 시) 캐시 삭제 + 5.5분 워밍업 대기</li>
+  </ol>
+  <p>이 과정에서 테스트 실행 없이 프로덕션에 직접 배포되므로, 오류가 사용자에게 즉시 노출된다. 롤백도 수동(git revert + 재시작)이다.</p>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 모니터링/알림 부재</div>
+  <p>현재 시스템 상태를 확인할 수 있는 방법은 직접 SSH 접속뿐이다:</p>
+  <ul>
+    <li>크론 실패 시 알림 없음 &rarr; 데이터가 갱신되지 않아도 모름</li>
+    <li>서버 다운 시 알림 없음 &rarr; 사용자 리포트로 인지</li>
+    <li>디스크 사용량 모니터링 없음 &rarr; 2.1GB DB + 200+ zip이 디스크를 채울 수 있음</li>
+    <li>API 응답 시간 모니터링 없음 &rarr; 성능 저하 감지 불가</li>
+  </ul>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 백업 전략 부재</div>
+  <p><code>upload_db.py</code>가 DB 교체 전 <code>.bak</code> 파일을 생성하지만, 이는 자동 백업이 아닌 배포 시 부산물이다:</p>
+  <ul>
+    <li>정기 백업 스케줄 없음</li>
+    <li>백업 파일의 외부 저장소 전송 없음</li>
+    <li>복구 테스트 이력 없음</li>
+    <li>DB 손상 시 RPO(복구 시점 목표)가 "마지막 수동 배포 시점"</li>
+  </ul>
+</div>
+
+<div class="box box-amber">
+  <div class="box-label">개선 필요 — 시크릿 관리</div>
+  <p>API 키(DART_API_KEY, FMP 키 등)가 <code>.env</code> 파일에 평문으로 저장되어 있다. 서버에 접근 가능한 누구든 모든 API 키를 볼 수 있다. Vault, AWS Secrets Manager, 또는 최소한 암호화된 환경변수 관리가 필요하다.</p>
+</div>
+
+<h3 class="section">5-3. 긍정적 평가</h3>
+
+<div class="box box-green">
+  <div class="box-label">잘 운영되는 부분</div>
+  <ul>
+    <li><strong>nginx 기반 유지보수 모드:</strong> 서버 코드 변경 없이 nginx 설정만으로 503 전환 가능. 간결하고 신뢰성 높은 방식.</li>
+    <li><strong>크론 자동화 구조:</strong> daily/monthly 분리, KR/US 시간대 고려(7am/21:30)한 설계는 적절하다.</li>
+    <li><strong>DB swap 방식:</strong> 새 DB를 SFTP 전송 후 swap하는 방식은 다운타임을 최소화한다.</li>
+    <li><strong>batch_logs 테이블:</strong> 수집 실행 이력이 DB에 기록되어 추적 가능하다.</li>
+  </ul>
+</div>
+
+<h3 class="section">5-4. 권고사항</h3>
+
+<table>
+  <tr><th>우선순위</th><th>권고</th><th>기대 효과</th></tr>
+  <tr><td><span class="badge badge-crit">P0</span></td><td><code>upload_db.py</code> 비밀번호를 환경변수로 이동 + SSH 키 인증 전환</td><td>보안 취약점 해소</td></tr>
+  <tr><td><span class="badge badge-crit">P0</span></td><td><code>auto_quarterly.sh</code> 서버 크론 등록 (4/1, 5/16, 8/15, 11/15)</td><td>분기 재무 수집 자동화</td></tr>
+  <tr><td><span class="badge badge-crit">P0</span></td><td>전용 서비스 계정 생성, root 직접 사용 중단</td><td>보안 강화, 권한 분리</td></tr>
+  <tr><td><span class="badge badge-crit">P1</span></td><td>모니터링 도입 (UptimeRobot + 크론 실패 알림 Telegram/Slack)</td><td>장애 즉시 인지</td></tr>
+  <tr><td><span class="badge badge-crit">P1</span></td><td>일일 자동 백업 + 외부 저장소(S3/GCS) 전송</td><td>데이터 유실 방지</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>GitHub Actions CI/CD 파이프라인 구축</td><td>자동 테스트/배포, 롤백 용이</td></tr>
+  <tr><td><span class="badge badge-warn">P2</span></td><td>Docker 컨테이너화</td><td>환경 재현성, 배포 일관성</td></tr>
+  <tr><td><span class="badge badge-info">P3</span></td><td>Cloudflare 프록시 활성화 (현재 DNS only)</td><td>CDN, DDoS 방어, 정적 자산 캐싱</td></tr>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch6">6. 종합 진단: 분류표</h2>
+
+<p>4인의 전문가 검토 결과를 하나의 분류표로 종합한다. 모든 구성 요소를 상태별로 분류하여 전체 시스템의 건강도를 한눈에 파악할 수 있도록 한다.</p>
+
+<div class="box box-green"><div class="box-label">범례</div>
+  <span class="badge badge-ok">정상 운영</span> 현재 상태로 유지 가능 &nbsp;&nbsp;
+  <span class="badge badge-warn">개선 필요</span> 중단기 개선 권고 &nbsp;&nbsp;
+  <span class="badge badge-crit">즉시 조치</span> 운영 리스크 &nbsp;&nbsp;
+  <span class="badge badge-info">확인 필요</span> 추가 조사 후 판단 &nbsp;&nbsp;
+  <span class="badge badge-legacy">정리 대상</span> 레거시, 삭제/보관
+</div>
+
+<h3 class="section">6-1. 데이터베이스 파일</h3>
+<table>
+  <tr><th>항목</th><th>상태</th><th>비고</th></tr>
+  <tr><td><code>stockpulse.db</code> (2.1GB)</td><td><span class="badge badge-warn">개선 필요</span></td><td>SQLite 2.1GB 한계 — PostgreSQL 전환 대상</td></tr>
+  <tr><td><code>competition.db</code> (1.1GB)</td><td><span class="badge badge-ok">정상 운영</span></td><td>안정적 운영 중이나 장기적으로 PostgreSQL 통합 대상</td></tr>
+  <tr><td><code>arena.db</code> (248KB)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>arena.html 존재하나 nav.js에 미등록, 어떤 페이지에서도 링크 없음 → 사실상 미사용</td></tr>
+  <tr><td><code>showcase.db</code> (272KB)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>picks.html 존재하나 nav.js에 미등록, 어떤 페이지에서도 링크 없음 → 사실상 미사용</td></tr>
+  <tr><td><code>users.db</code> (364KB)</td><td><span class="badge badge-ok">정상 운영</span></td><td>사용자 관리 정상 동작</td></tr>
+  <tr><td><code>articles.db</code> (20KB)</td><td><span class="badge badge-info">확인 필요</span></td><td>competition.db articles와 중복 여부 확인</td></tr>
+  <tr><td><code>competition.db.bak</code> / <code>.bak2</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>백업 잔여물, 정리 필요</td></tr>
+  <tr><td><code>stockpulse.db.bak_*</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>백업 잔여물 2개</td></tr>
+  <tr><td><code>stockpulse.db.gz</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>전송용 압축 파일 잔여</td></tr>
+</table>
+
+<h3 class="section">6-2. 주요 테이블</h3>
+<table>
+  <tr><th>DB</th><th>테이블</th><th>상태</th><th>비고</th></tr>
+  <tr><td>stockpulse</td><td><code>stocks</code></td><td><span class="badge badge-ok">정상</span></td><td>KR market_cap 정상, US market_cap 부재(valuations에 있음)</td></tr>
+  <tr><td>stockpulse</td><td><code>daily_prices</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>520만 rows — 인덱스 최적화, 파티셔닝 필요</td></tr>
+  <tr><td>stockpulse</td><td><code>financials</code></td><td><span class="badge badge-ok">정상</span></td><td>DART + yfinance 혼합이나 정상 동작</td></tr>
+  <tr><td>stockpulse</td><td><code>valuations</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>계산값/수집값 혼재 — 분리 권고</td></tr>
+  <tr><td>stockpulse</td><td><code>technical_indicators</code></td><td><span class="badge badge-ok">정상</span></td><td>일별 갱신, 정상 동작</td></tr>
+  <tr><td>stockpulse</td><td><code>batch_logs</code></td><td><span class="badge badge-ok">정상</span></td><td>수집 이력 추적용</td></tr>
+  <tr><td>competition</td><td>10개 테이블</td><td><span class="badge badge-ok">정상</span></td><td>대회 시스템 안정 운영 중</td></tr>
+  <tr><td>users</td><td>7개 테이블</td><td><span class="badge badge-ok">정상</span></td><td>계정/결제/퀴즈 정상 동작</td></tr>
+</table>
+
+<h3 class="section">6-3. 수집 스크립트</h3>
+<table>
+  <tr><th>스크립트</th><th>상태</th><th>비고</th></tr>
+  <tr><td><code>collectors/kr/price.py</code></td><td><span class="badge badge-ok">정상</span></td><td>Naver Finance, 매일 실행</td></tr>
+  <tr><td><code>collectors/kr/valuation.py</code></td><td><span class="badge badge-ok">정상</span></td><td>Naver API, pykrx 대체 완료</td></tr>
+  <tr><td><code>collectors/kr/financial.py</code></td><td><span class="badge badge-ok">정상</span></td><td>DART API, 분기 실행</td></tr>
+  <tr><td><code>collectors/kr/stock_list.py</code></td><td><span class="badge badge-ok">정상</span></td><td>KRX, 월간 실행</td></tr>
+  <tr><td><code>collectors/us/price.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>yfinance 의존 — 안정성 위험</td></tr>
+  <tr><td><code>collectors/us/financial.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>yfinance 의존 — 안정성 위험</td></tr>
+  <tr><td><code>collectors/us/stock_list.py</code></td><td><span class="badge badge-ok">정상</span></td><td>NASDAQ 공식 데이터</td></tr>
+  <tr><td><code>calc_kr_valuations.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>merge와 2단계 구조 — 통합 권고</td></tr>
+  <tr><td><code>merge_kr_valuations.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>calc와 2단계 구조 — 통합 권고</td></tr>
+  <tr><td><code>calibrate_scoring.py</code></td><td><span class="badge badge-ok">정상</span></td><td>월간 자동 실행</td></tr>
+  <tr><td><code>calculators/technical.py</code></td><td><span class="badge badge-ok">정상</span></td><td>RSI Wilder EMA 수정 완료</td></tr>
+  <tr><td><code>rebuild_valuations_quarterly.py</code></td><td><span class="badge badge-ok">정상</span></td><td>백테스트용 historical 재구축</td></tr>
+  <tr><td><code>collect_kr_fnguide.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FnGuide 크롤러, 미사용</td></tr>
+  <tr><td><code>collect_kr_fy2022_dart.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>2022년 1회성 수집</td></tr>
+  <tr><td><code>collect_2022_valuations.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>2022년 1회성</td></tr>
+  <tr><td><code>collect_kr_valuations_krx.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>KRX 방식, Naver로 대체</td></tr>
+  <tr><td><code>collect_kr_dividends_dart.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>배당 별도 수집, 현재 미사용</td></tr>
+  <tr><td><code>collect_us_financials_sec.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>SEC EDGAR, yfinance로 대체</td></tr>
+  <tr><td><code>collect_us_fmp.py</code> / <code>_annual.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 시도 흔적</td></tr>
+  <tr><td><code>collect_us_prices_fmp.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 가격, yfinance로 대체</td></tr>
+  <tr><td><code>collect_us_shares_fmp.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 주식수, 미사용</td></tr>
+  <tr><td><code>collect_us_financials_quarterly_yf.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>구버전, collectors/로 대체</td></tr>
+  <tr><td><code>pipeline_final.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>auto_daily.sh로 대체</td></tr>
+  <tr><td><code>pipeline_kr_expand.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>auto_daily.sh로 대체</td></tr>
+  <tr><td><code>pipeline_kr_full_recollect.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 전체 재수집</td></tr>
+  <tr><td><code>pipeline_overnight.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>auto_daily.sh로 대체</td></tr>
+  <tr><td><code>pipeline_us_expand.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>auto_daily.sh로 대체</td></tr>
+  <tr><td><code>chain_shares_then_kr.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 데이터 보정</td></tr>
+  <tr><td><code>chain_us_then_kr.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 데이터 보정</td></tr>
+  <tr><td><code>import_dart_bulk.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>초기 DB 구축, 1회성</td></tr>
+  <tr><td><code>expand_us_stocks_fmp.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 종목 확장, 미사용</td></tr>
+  <tr><td><code>collect_kr_fnguide.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>구버전 수집기</td></tr>
+  <tr><td><code>fix_kr_q4_cumulative.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 데이터 보정</td></tr>
+  <tr><td><code>verify_kr_financials.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 검증 스크립트</td></tr>
+  <tr><td><code>audit_data.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 감사 스크립트</td></tr>
+</table>
+
+<h3 class="section">6-4. 자동화 스크립트</h3>
+<table>
+  <tr><th>스크립트</th><th>상태</th><th>비고</th></tr>
+  <tr><td><code>auto_daily.sh</code> (7am 월~토)</td><td><span class="badge badge-ok">정상</span></td><td>KR+US 가격/기술/밸류에이션</td></tr>
+  <tr><td><code>auto_daily.sh</code> (21:30 화~토)</td><td><span class="badge badge-ok">정상</span></td><td>US 장마감 후 보완</td></tr>
+  <tr><td><code>auto_showcase.sh</code></td><td><span class="badge badge-ok">정상</span></td><td>showcase.db 갱신</td></tr>
+  <tr><td><code>auto_monthly.sh</code></td><td><span class="badge badge-ok">정상</span></td><td>종목목록 + 캘리브레이션</td></tr>
+  <tr><td><code>auto_quarterly.sh</code></td><td><span class="badge badge-crit">즉시 조치</span></td><td>서버 크론탭 미등록!</td></tr>
+</table>
+
+<h3 class="section">6-5. 캐시 및 설정 파일</h3>
+<table>
+  <tr><th>파일</th><th>상태</th><th>비고</th></tr>
+  <tr><td><code>data/score_cache.pkl</code> (17MB)</td><td><span class="badge badge-ok">정상</span></td><td>SCHEMA_VERSION="v9", 자동 무효화</td></tr>
+  <tr><td><code>data/scoring_calibration.json</code></td><td><span class="badge badge-ok">정상</span></td><td>월간 자동 갱신</td></tr>
+  <tr><td><code>.env</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>API 키 평문 저장, Secret Manager 전환 권고</td></tr>
+  <tr><td><code>upload_db.py</code></td><td><span class="badge badge-crit">즉시 조치</span></td><td>SSH 비밀번호 하드코딩</td></tr>
+</table>
+
+<h3 class="section">6-6. 기타 정리 대상</h3>
+<table>
+  <tr><th>항목</th><th>상태</th><th>비고</th></tr>
+  <tr><td><code>db/</code> DART zip 파일 (200+개)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>초기 구축용, 수 GB 용량 차지</td></tr>
+  <tr><td><code>data/og_test*.png</code> (10개)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>OG 이미지 테스트 잔여물</td></tr>
+  <tr><td><code>data/*.json</code> (실험 결과 10+개)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>연구용 중간 결과물, 운영 불필요</td></tr>
+  <tr><td><code>data/*.md</code> (리포트 4+개)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>연구 보고서, 별도 보관 권고</td></tr>
+  <tr><td><code>docs/</code> 한글 문서 다수</td><td><span class="badge badge-legacy">정리 대상</span></td><td>내부 기획/투자성향 문서 — 별도 보관</td></tr>
+  <tr><td><code>scripts/analysis/</code> (20+개)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>연구/백테스트 스크립트, 운영과 분리</td></tr>
+  <tr><td><code>scripts/management/</code> (10+개)</td><td><span class="badge badge-legacy">정리 대상</span></td><td>1회성 관리 스크립트</td></tr>
+</table>
+
+<h3 class="section">6-7. 종합 통계</h3>
+<table>
+  <tr><th>상태</th><th>건수</th><th>비율</th></tr>
+  <tr><td><span class="badge badge-ok">정상 운영</span></td><td>28건</td><td>37%</td></tr>
+  <tr><td><span class="badge badge-warn">개선 필요</span></td><td>11건</td><td>14%</td></tr>
+  <tr><td><span class="badge badge-crit">즉시 조치</span></td><td>5건</td><td>7%</td></tr>
+  <tr><td><span class="badge badge-info">확인 필요</span></td><td>2건</td><td>3%</td></tr>
+  <tr><td><span class="badge badge-legacy">정리 대상</span></td><td>30건</td><td>39%</td></tr>
+  <tr><td><strong>합계</strong></td><td><strong>76건</strong></td><td><strong>100%</strong></td></tr>
+</table>
+
+<div class="box box-amber">
+  <div class="box-label">핵심 메시지</div>
+  <p>전체 76개 항목 중 <strong>37%가 정상 운영</strong> 상태이며, <strong>39%가 정리 대상</strong>인 레거시이다. 즉시 조치가 필요한 5건은 모두 보안(비밀번호 하드코딩, root 사용)과 운영 안정성(크론 미등록)에 관한 것이다. 레거시를 정리하면 코드베이스가 절반 가까이 가벼워지고, 신규 개발자 온보딩 시간이 크게 단축된다.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="appendix">부록: 운영 환경 상세</h2>
+
+<h3 class="section">A-1. DB 관리 도구 및 접근 방식</h3>
+<table>
+  <tr><th>항목</th><th>현재 상태</th></tr>
+  <tr><td>DB 엔진</td><td>SQLite 3 (파일 기반, 서버 프로세스 없음)</td></tr>
+  <tr><td>ORM</td><td>SQLAlchemy 2.0 — stockpulse.db만 ORM 사용. 나머지 5개 DB는 raw sqlite3 모듈 직접 사용</td></tr>
+  <tr><td>DB 관리 GUI</td><td>별도 관리 도구 미사용. DB Browser for SQLite 또는 DBeaver 등 권장</td></tr>
+  <tr><td>마이그레이션 도구</td><td>미사용 (Alembic 등 없음). 스키마 변경 시 수동 ALTER TABLE 또는 재생성</td></tr>
+  <tr><td>백업 전략</td><td>수동. upload_db.py 실행 시 .bak 자동 생성되나, 정기 자동 백업 없음</td></tr>
+  <tr><td>WAL 모드</td><td>stockpulse.db에 PRAGMA journal_mode=WAL 설정 (동시 읽기/쓰기 허용)</td></tr>
+</table>
+
+<h3 class="section">A-2. 서버 환경</h3>
+<table>
+  <tr><th>항목</th><th>상세</th></tr>
+  <tr><td>호스팅</td><td>Vultr VPS (158.247.235.58)</td></tr>
+  <tr><td>OS</td><td>Linux (root 계정 직접 사용)</td></tr>
+  <tr><td>웹서버</td><td>Nginx → 리버스 프록시 → Uvicorn (port 8000)</td></tr>
+  <tr><td>앱 프레임워크</td><td>FastAPI (Python 3.x)</td></tr>
+  <tr><td>도메인</td><td>stockdigging.com (Gabia 구매, Cloudflare DNS)</td></tr>
+  <tr><td>SSL</td><td>Cloudflare 제공 (서버↔CF 간은 확인 필요)</td></tr>
+  <tr><td>프로세스 관리</td><td>systemctl (stockdigging 서비스)</td></tr>
+  <tr><td>서버 경로</td><td>/var/www/stockdigging/</td></tr>
+</table>
+
+<h3 class="section">A-3. 로컬 ↔ 서버 DB 동기화</h3>
+<table>
+  <tr><th>단계</th><th>방법</th><th>도구</th></tr>
+  <tr><td>1. 로컬 DB 압축</td><td>gzip -c db/stockpulse.db > db/stockpulse.db.gz</td><td>gzip</td></tr>
+  <tr><td>2. 서버 업로드</td><td>SFTP로 /tmp/에 전송 (약 570MB)</td><td>paramiko (Python SSH)</td></tr>
+  <tr><td>3. 서버 압축해제</td><td>gunzip → /tmp/stockpulse_new.db</td><td>SSH 원격 실행</td></tr>
+  <tr><td>4. 무결성 검사</td><td>PRAGMA integrity_check + 행 수 검증</td><td>sqlite3</td></tr>
+  <tr><td>5. 기존 DB 백업</td><td>mv → .bak_날짜</td><td>SSH 원격 실행</td></tr>
+  <tr><td>6. 새 DB 교체</td><td>mv /tmp/stockpulse_new.db → db/stockpulse.db</td><td>SSH 원격 실행</td></tr>
+  <tr><td>7. 서버 재시작</td><td>systemctl restart stockdigging</td><td>SSH 원격 실행</td></tr>
+</table>
+<div class="box box-accept">
+  <div class="box-label">보안 경고</div>
+  upload_db.py에 서버 비밀번호가 평문으로 하드코딩되어 있음. SSH 키 인증 또는 시크릿 매니저로 즉시 교체 필요.
+</div>
+
+<h3 class="section">A-4. 크론 스케줄 전체 현황</h3>
+<table>
+  <tr><th>스크립트</th><th>스케줄 (KST)</th><th>서버 등록</th><th>실행 내용</th></tr>
+  <tr><td>auto_daily.sh</td><td>평일 07:00</td><td><span class="badge badge-ok">등록됨</span></td><td>가격→기술→밸류에이션→대회스냅샷</td></tr>
+  <tr><td>auto_daily.sh (US)</td><td>화~토 21:30</td><td><span class="badge badge-ok">등록됨</span></td><td>US 장마감 후 가격+기술적</td></tr>
+  <tr><td>auto_monthly.sh</td><td>매월 1일 09:00</td><td><span class="badge badge-ok">등록됨</span></td><td>종목목록 최신화+캘리브레이션</td></tr>
+  <tr><td>auto_quarterly.sh</td><td>4/1, 5/16, 8/15, 11/15</td><td><span class="badge badge-danger">미등록</span></td><td>재무제표 수집+캘리브레이션</td></tr>
+  <tr><td>auto_showcase.sh</td><td>매일 07:00+17:00</td><td><span class="badge badge-legacy">정리 대상</span></td><td>showcase 포트폴리오 (미사용 기능)</td></tr>
+</table>
+
+<h3 class="section">A-5. 미사용 확인된 프론트엔드 페이지</h3>
+<p>아래 페이지들은 파일은 존재하나 네비게이션(nav.js)에 등록되지 않았고, 어떤 페이지에서도 링크하지 않아 사용자가 접근할 수 없는 상태입니다.</p>
+<table>
+  <tr><th>페이지</th><th>연결된 DB</th><th>판정</th></tr>
+  <tr><td>arena.html</td><td>arena.db</td><td><span class="badge badge-legacy">정리 대상</span> — 네비게이션 미등록, 외부 링크 없음</td></tr>
+  <tr><td>picks.html</td><td>showcase.db</td><td><span class="badge badge-legacy">정리 대상</span> — 네비게이션 미등록, 외부 링크 없음</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2 class="chapter" id="ch7">7. 권장 로드맵</h2>
+
+<h3 class="section">P0 — 즉시 (이번 주 내)</h3>
+
+<table>
+  <tr><th>#</th><th>과제</th><th>소요</th><th>담당 영역</th><th>위험도</th></tr>
+  <tr><td>1</td><td><code>upload_db.py</code> SSH 비밀번호를 환경변수로 이동, SSH 키 인증 전환</td><td>2시간</td><td>인프라</td><td><span class="badge badge-crit">보안</span></td></tr>
+  <tr><td>2</td><td>git history에서 비밀번호 포함 커밋 제거 (BFG Repo-Cleaner)</td><td>1시간</td><td>인프라</td><td><span class="badge badge-crit">보안</span></td></tr>
+  <tr><td>3</td><td><code>auto_quarterly.sh</code> 서버 크론탭 등록 (4/1, 5/16, 8/15, 11/15)</td><td>30분</td><td>인프라</td><td><span class="badge badge-crit">운영</span></td></tr>
+  <tr><td>4</td><td>전용 서비스 계정(<code>stockdigging</code>) 생성, root 사용 중단</td><td>2시간</td><td>인프라</td><td><span class="badge badge-crit">보안</span></td></tr>
+  <tr><td>5</td><td>레거시 스크립트 29개 &rarr; <code>scripts/_archive/</code> 이동</td><td>1시간</td><td>파이프라인</td><td><span class="badge badge-warn">정리</span></td></tr>
+  <tr><td>6</td><td><code>db/</code> DART zip 200+개 &rarr; 외부 스토리지(Google Drive 등) 이동</td><td>2시간</td><td>파이프라인</td><td><span class="badge badge-warn">정리</span></td></tr>
+</table>
+
+<h3 class="section">P1 — 1개월 이내</h3>
+
+<table>
+  <tr><th>#</th><th>과제</th><th>소요</th><th>담당 영역</th></tr>
+  <tr><td>7</td><td>PostgreSQL 통합 계획 수립 (스키마 설계, 마이그레이션 스크립트 작성)</td><td>1주</td><td>DB</td></tr>
+  <tr><td>8</td><td>US 상용 API 평가 및 전환 (Polygon.io vs Alpha Vantage Pro)</td><td>2주</td><td>파이프라인</td></tr>
+  <tr><td>9</td><td>모니터링 도입: UptimeRobot(서버) + 크론 실패 Telegram 알림</td><td>1일</td><td>인프라</td></tr>
+  <tr><td>10</td><td>일일 자동 백업 스크립트 + S3/GCS 전송</td><td>2일</td><td>인프라</td></tr>
+  <tr><td>11</td><td><code>valuations</code> 테이블을 수집값/계산값 분리 (<code>valuations_live</code> / <code>valuations_calc</code>)</td><td>3일</td><td>DB</td></tr>
+  <tr><td>12</td><td>arena.db / articles.db 중복 검토 및 통합 판단</td><td>1일</td><td>DB</td></tr>
+</table>
+
+<h3 class="section">P2 — 3개월 이내</h3>
+
+<table>
+  <tr><th>#</th><th>과제</th><th>소요</th><th>담당 영역</th></tr>
+  <tr><td>13</td><td>GitHub Actions CI/CD 파이프라인 구축 (lint + test + deploy)</td><td>1주</td><td>인프라</td></tr>
+  <tr><td>14</td><td>Docker 컨테이너화 (Dockerfile + docker-compose)</td><td>1주</td><td>인프라</td></tr>
+  <tr><td>15</td><td><code>scoring.py</code> 모듈 분리: <code>scoring/</code> 패키지 (loader, indicators, cache, targets)</td><td>2주</td><td>스코어링</td></tr>
+  <tr><td>16</td><td>증분 캐시 워밍업 도입 (변경 종목만 재계산)</td><td>1주</td><td>스코어링</td></tr>
+  <tr><td>17</td><td>PostgreSQL 실제 마이그레이션 실행 (6개 DB &rarr; 1개 인스턴스)</td><td>2주</td><td>DB</td></tr>
+  <tr><td>18</td><td>KR 밸류에이션 2단계 &rarr; 1단계 통합</td><td>3일</td><td>파이프라인</td></tr>
+  <tr><td>19</td><td>market_cap 단일 출처화 (DB 레벨 정규화)</td><td>2일</td><td>DB + 스코어링</td></tr>
+  <tr><td>20</td><td>Cloudflare 프록시 활성화 (CDN + DDoS 방어)</td><td>1일</td><td>인프라</td></tr>
+</table>
+
+<h3 class="section">P3 — 6개월 이내</h3>
+
+<table>
+  <tr><th>#</th><th>과제</th><th>소요</th><th>담당 영역</th></tr>
+  <tr><td>21</td><td>실시간 스코어링 아키텍처 설계 (이벤트 기반, 증분 계산)</td><td>2주</td><td>스코어링</td></tr>
+  <tr><td>22</td><td>캘리브레이션 fallback 완전 제거 (모든 지표 백분위 기반)</td><td>1주</td><td>스코어링</td></tr>
+  <tr><td>23</td><td>is_active 타임스탬프 추가 + 시점별 백테스트 필터링</td><td>1주</td><td>DB + 파이프라인</td></tr>
+  <tr><td>24</td><td>로드밸런서 + 이중화 (Blue/Green 배포)</td><td>2주</td><td>인프라</td></tr>
+  <tr><td>25</td><td>시크릿 매니저 도입 (HashiCorp Vault 또는 AWS Secrets Manager)</td><td>1주</td><td>인프라</td></tr>
+</table>
+
+<h3 class="section">로드맵 타임라인</h3>
+
+<pre class="diagram">
+  2026 Q2                           2026 Q3                         2026 Q4
+  ├─ P0 즉시 조치 (1주) ──┤
+  │  비밀번호 이동           │
+  │  크론 등록               │
+  │  root 분리               │
+  │  레거시 정리             │
+  │                          │
+  ├── P1 1개월 ─────────────┤
+  │   PostgreSQL 설계         │
+  │   US API 전환             │
+  │   모니터링/백업           │
+  │   valuations 분리         │
+  │                           │
+  ├───── P2 3개월 ────────────────────────┤
+  │      CI/CD + Docker                    │
+  │      scoring.py 모듈 분리              │
+  │      PostgreSQL 마이그레이션           │
+  │      밸류에이션 파이프라인 통합        │
+  │                                        │
+  ├────────── P3 6개월 ────────────────────────────────────┤
+  │           실시간 스코어링                                │
+  │           이중화/로드밸런서                              │
+  │           시크릿 매니저                                  │
+  └─────────────────────────────────────────────────────────┘
+</pre>
+
+<h3 class="section">총 투자 추정</h3>
+
+<table>
+  <tr><th>단계</th><th>과제 수</th><th>추정 공수</th><th>비고</th></tr>
+  <tr><td>P0 (즉시)</td><td>6건</td><td>~1일</td><td>보안 + 정리, 즉시 실행 가능</td></tr>
+  <tr><td>P1 (1개월)</td><td>6건</td><td>~3주</td><td>설계 + API 전환 + 모니터링</td></tr>
+  <tr><td>P2 (3개월)</td><td>8건</td><td>~7주</td><td>핵심 아키텍처 개선</td></tr>
+  <tr><td>P3 (6개월)</td><td>5건</td><td>~7주</td><td>장기 확장성 확보</td></tr>
+  <tr><td><strong>합계</strong></td><td><strong>25건</strong></td><td><strong>~18주 (풀타임 1인 기준)</strong></td><td>-</td></tr>
+</table>
+
+<div class="box box-green">
+  <div class="box-label">최종 평가</div>
+  <p>StockDigging의 기술 스택은 <strong>1인 개발자가 구축한 것치고 매우 높은 완성도</strong>를 보여준다. 6개 투자 스타일, 30개 지표, 9,400개 종목, 109개 API 엔드포인트, 크론 기반 자동 데이터 파이프라인은 상당한 실행력의 증거이다.</p>
+  <p>다만, 빠른 성장 과정에서 축적된 <strong>기술 부채(레거시 29개 스크립트, DART zip 200개, 6개 분산 DB)</strong>와 <strong>보안 취약점(비밀번호 하드코딩, root 사용)</strong>이 존재한다. 이는 초기 스타트업에서 흔히 볼 수 있는 패턴이며, P0 항목 6건을 즉시 처리하면 가장 큰 리스크를 해소할 수 있다.</p>
+  <p>공동 창업자 합류 시, P1~P2 항목을 병렬 처리하면 3개월 내에 프로덕션 수준의 인프라로 전환할 수 있다.</p>
+</div>
+
+<div class="footer">
+  StockDigging &nbsp;|&nbsp; 기술 아키텍처 독립 검토 보고서 &nbsp;|&nbsp; 2026 Q1 &nbsp;|&nbsp; 내부 기술 실사용
+</div>
+
+</div>
+</div><!-- page-body -->
+<script src="/nav.js"></script>
+</body>
+</html>
