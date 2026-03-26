@@ -92,7 +92,7 @@
   <h1>StockDigging</h1>
   <p>운영 플레이북</p>
   <div class="divider"></div>
-  <div class="meta">2026-03-26 기준 &nbsp;|&nbsp; 실전 운영 가이드</div>
+  <div class="meta">2026-03-27 기준 &nbsp;|&nbsp; 실전 운영 가이드</div>
 </div>
 
 <div class="container">
@@ -108,11 +108,12 @@
 
 DART API ──&gt; collectors/ ──&gt; stockpulse.db ──&gt; scoring.py ──&gt; score_cache.pkl ──&gt; API ──&gt; 프론트엔드
 pykrx   ──&gt; (KR 가격)         (2.1GB)         (1,907줄)      (17MB)            (109개)
-yfinance ──&gt; (US 가격)
+FMP ────&gt; (US 가격+밸류에이션)
 FMP ────&gt; (US 재무)
 
 [크론 자동화]
-07:00 KST 매일(월~토) ──&gt; auto_daily.sh  (가격 &gt; 기술 &gt; 밸류에이션 &gt; 대회)
+16:00 KST 매일(월~토) ──&gt; auto_daily.sh     (KR: 가격 &gt; 기술 &gt; 밸류에이션 &gt; 대회 &gt; 캐시)
+06:00 KST 매일(월~금) ──&gt; auto_daily_us.sh   (US: FMP가격 &gt; 기술 &gt; FMP밸류 &gt; 캐시)
 매월 1일 00:00 UTC ────&gt; auto_monthly.sh (종목목록 &gt; 캘리브레이션)
 분기 (8회/년) ─────────&gt; auto_quarterly.sh (재무제표 &gt; 캘리브레이션)
 
@@ -122,7 +123,7 @@ FMP ────&gt; (US 재무)
 
 <div class="box box-info">
   <div class="box-label">핵심 포인트</div>
-  scoring.py가 DB 데이터를 읽어 score_cache.pkl을 생성하고, API가 이 캐시를 서빙한다. 캐시 갱신은 서버 시작 시 자동으로 수행되며, 크론이 새 데이터를 DB에 쓰면 다음 캐시 갱신 때 반영된다.
+  scoring.py가 DB 데이터를 읽어 score_cache.pkl을 생성하고, API가 이 캐시를 서빙한다. 배치 완료 후 <code>/api/cache/refresh</code>를 호출하여 서버 재시작 없이 캐시를 자동 갱신한다.
 </div>
 
 
@@ -130,11 +131,14 @@ FMP ────&gt; (US 재무)
 <!-- 2. 매일 확인사항 -->
 <!-- ============================================================ -->
 <h2 class="chapter">2. 매일 확인사항</h2>
-<p>매일 아침(한국 시간 09:00 이후) 다음 항목을 확인한다.</p>
+<p>매일 아침(한국 시간 09:00 이후) 다음 항목을 확인한다. KR 배치는 16:00 KST (07:00 UTC), US 배치는 06:00 KST (21:00 UTC)에 실행된다.</p>
 
 <h3 class="section">2-1. 크론 로그 확인</h3>
-<pre># 최근 20줄 확인
-tail -20 /var/www/stockdigging/logs/batch_daily.log</pre>
+<pre># KR 일일 배치 로그 (최근 20줄)
+tail -20 /var/www/stockdigging/logs/batch_daily.log
+
+# US 일일 배치 로그
+tail -20 /var/www/stockdigging/logs/batch_daily_us.log</pre>
 <p>정상 완료 시 마지막 줄에 다음 문자열이 포함되어야 한다:</p>
 <pre>"일일 배치 완료"</pre>
 <p>이 문자열이 없거나 에러 로그가 있으면 <strong>7장 트러블슈팅</strong>을 참고한다.</p>
@@ -167,8 +171,8 @@ print('최신 밸류:', c.execute('SELECT MAX(date) FROM valuations').fetchone()
 
 <table>
   <tr><th>시간 (UTC)</th><th>주기</th><th>스크립트</th><th>로그 파일</th><th>설명</th></tr>
-  <tr><td>22:00 (07:00 KST)</td><td>매일 월~토</td><td>auto_daily.sh</td><td>logs/batch_daily.log</td><td>가격, 기술적 지표, 밸류에이션, 대회</td></tr>
-  <tr><td>12:30 (21:30 KST)</td><td>매일 화~토</td><td>auto_daily.sh</td><td>logs/batch_daily.log</td><td>US 장마감 후 가격+기술적</td></tr>
+  <tr><td>07:00 (16:00 KST)</td><td>매일 월~토</td><td>auto_daily.sh</td><td>logs/batch_daily.log</td><td>KR: 가격, 기술적, 밸류에이션, 대회, 캐시갱신</td></tr>
+  <tr><td>21:00 (06:00 KST)</td><td>매일 월~금</td><td>auto_daily_us.sh</td><td>logs/batch_daily_us.log</td><td>US: FMP 가격, 기술적, FMP 밸류에이션, 캐시갱신</td></tr>
   <tr><td>00:00</td><td>매월 1일</td><td>auto_monthly.sh</td><td>logs/cron_monthly.log</td><td>종목목록 최신화, 캘리브레이션</td></tr>
   <tr><td>00:00</td><td>4/1, 5/16, 8/15, 11/15</td><td>auto_quarterly.sh</td><td>logs/cron_quarterly.log</td><td>분기 재무제표 1차 수집</td></tr>
   <tr><td>00:00</td><td>4/7, 5/22, 8/21, 11/21</td><td>auto_quarterly.sh</td><td>logs/cron_quarterly.log</td><td>분기 재무제표 2차 (누락 보완)</td></tr>
@@ -187,17 +191,17 @@ crontab -l</pre>
 <!-- ============================================================ -->
 <!-- 4. auto_daily.sh 상세 -->
 <!-- ============================================================ -->
-<h2 class="chapter">4. auto_daily.sh 상세 (6단계)</h2>
-<p>매일 크론이 실행하는 일일 배치의 6단계 흐름이다.</p>
+<h2 class="chapter">4. auto_daily.sh 상세 (KR 전용, 6단계)</h2>
+<p>매일 크론이 실행하는 KR 일일 배치의 6단계 흐름이다.</p>
 
 <table>
   <tr><th>단계</th><th>작업</th><th>스크립트</th><th>소요 시간</th></tr>
-  <tr><td>1</td><td>KR+US 가격 수집</td><td>run_batch.py --step price</td><td>~5분</td></tr>
-  <tr><td>2</td><td>KR+US 기술적 지표 계산</td><td>run_batch.py --step technical</td><td>~3분</td></tr>
+  <tr><td>1</td><td>KR 가격 수집</td><td>run_batch.py --market KR --step price</td><td>~3분</td></tr>
+  <tr><td>2</td><td>KR 기술적 지표</td><td>run_batch.py --market KR --step technical</td><td>~2분</td></tr>
   <tr><td>3</td><td>KR 밸류에이션 계산</td><td>calc_kr_valuations.py</td><td>~2분</td></tr>
-  <tr><td>4</td><td>US 밸류에이션 수집</td><td>collect_us_valuations_yf.py</td><td>~5분</td></tr>
-  <tr><td>5</td><td>모의투자 대회 스냅샷</td><td>competition_manager.py snapshot</td><td>~1분</td></tr>
-  <tr><td>6</td><td>사전등록 시뮬레이션</td><td>competition_manager.py simulate</td><td>~1분</td></tr>
+  <tr><td>4</td><td>모의투자 대회 스냅샷</td><td>update_competition.py</td><td>~1분</td></tr>
+  <tr><td>5</td><td>사전등록 시뮬레이션</td><td>curl /admin/run-pending-simulations</td><td>~1분</td></tr>
+  <tr><td>6</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
 </table>
 
 <div class="box box-rebut">
@@ -207,7 +211,27 @@ crontab -l</pre>
 
 <div class="box box-info">
   <div class="box-label">캐시 정책</div>
-  auto_daily.sh는 score_cache.pkl을 삭제하지 않는다. 서버가 백그라운드에서 자동 갱신한다. 캐시를 수동으로 삭제해야 하는 경우는 <strong>스코어링 코드(scoring.py)를 변경했을 때뿐</strong>이다.
+  배치 완료 후 <code>/api/cache/refresh</code>를 호출하여 서버 재시작 없이 캐시를 갱신한다. 캐시를 수동으로 삭제해야 하는 경우는 <strong>스코어링 코드(scoring.py)를 변경했을 때뿐</strong>이다.
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 4-2. auto_daily_us.sh 상세 -->
+<!-- ============================================================ -->
+<h2 class="chapter">4-2. auto_daily_us.sh 상세 (US 전용, FMP 기반, 4단계)</h2>
+<p>매일 크론이 실행하는 US 일일 배치의 4단계 흐름이다.</p>
+
+<table>
+  <tr><th>단계</th><th>작업</th><th>스크립트</th><th>소요 시간</th></tr>
+  <tr><td>1</td><td>US 가격 수집 (FMP)</td><td>collect_us_prices_fmp.py</td><td>~10분</td></tr>
+  <tr><td>2</td><td>US 기술적 지표</td><td>run_batch.py --market US --step technical</td><td>~2분</td></tr>
+  <tr><td>3</td><td>US 밸류에이션 계산 (FMP + DB TTM)</td><td>calc_us_valuations_fmp.py</td><td>~45분</td></tr>
+  <tr><td>4</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
+</table>
+
+<div class="box box-info">
+  <div class="box-label">FMP 전환 (2026-03-27)</div>
+  US 데이터 소스가 yfinance에서 FMP로 전면 교체되었다 (2026-03-27). FMP /stable/ 엔드포인트를 사용하며, PER/PBR은 DB 재무제표(TTM) + FMP 종가로 직접 계산한다. ROE/영업이익률/배당수익률은 FMP key-metrics-ttm/ratios-ttm에서 조회한다.
 </div>
 
 
@@ -228,8 +252,9 @@ crontab -l</pre>
   <tr><td>KR PER/PBR/ROE</td><td>calc_kr_valuations.py (DART 재무 + 종가)</td><td>auto_daily.sh에서 매일 실행</td><td>Naver 사용 안 함</td></tr>
   <tr><td>KR 종가</td><td>pykrx (KRX 공식)</td><td>collectors/kr/price.py</td><td>매일 크론</td></tr>
   <tr><td>US 재무제표</td><td>FMP (유료) + db/ zip</td><td>collectors/us/financial.py</td><td>분기 크론</td></tr>
-  <tr><td>US 종가</td><td>yfinance</td><td>collectors/us/price.py</td><td>비공식, 안정성 주의</td></tr>
-  <tr><td>US 밸류에이션</td><td>yfinance</td><td>collect_us_valuations_yf.py</td><td>비공식, 안정성 주의</td></tr>
+  <tr><td>US 종가</td><td>FMP /stable/quote</td><td>collect_us_prices_fmp.py</td><td>SLA 보장, Starter 플랜</td></tr>
+  <tr><td>US 밸류에이션</td><td>FMP + DB TTM 계산</td><td>calc_us_valuations_fmp.py</td><td>PER/PBR: DB 재무+FMP종가, ROE/배당: FMP API</td></tr>
+  <tr><td>US 시가총액</td><td>FMP /stable/quote</td><td>collect_us_prices_fmp.py</td><td>stocks.market_cap 자동 업데이트</td></tr>
   <tr><td>기술적 지표</td><td>자체 계산 (종가 기반)</td><td>calculators/technical.py</td><td>매일 크론</td></tr>
 </table>
 
@@ -237,7 +262,8 @@ crontab -l</pre>
   <div class="box-label">원칙</div>
   <ul style="margin-bottom:0">
     <li>KR 시가총액은 반드시 <code>stocks.market_cap</code>에서 로드 (<code>valuations.market_cap</code> 아님)</li>
-    <li>US 시가총액은 <code>valuations.market_cap</code>에서 raw SQL 조회</li>
+    <li>US 시가총액은 <code>stocks.market_cap</code> (FMP에서 매일 갱신) 또는 <code>valuations.market_cap</code></li>
+    <li>부채비율은 한국 표준(부채총계/자본총계) 사용. KR/US 동일 기준.</li>
     <li>PER sanitize: &lt;0.5 또는 &gt;1000이면 None 처리</li>
     <li>PBR sanitize: &lt;0.05 또는 &gt;200이면 None 처리</li>
   </ul>
@@ -270,8 +296,11 @@ systemctl status nginx
 systemctl reload nginx</pre>
 
 <h3 class="section">6-3. 로그 확인</h3>
-<pre># 일일 배치 로그 (실시간)
+<pre># KR 일일 배치 로그 (실시간)
 tail -f logs/batch_daily.log
+
+# US 일일 배치 로그
+tail -f logs/batch_daily_us.log
 
 # 월간 배치 로그
 tail -20 logs/cron_monthly.log
@@ -397,8 +426,8 @@ import sqlite3; c=sqlite3.connect('db/stockpulse.db')
 print(c.execute('SELECT MAX(date) FROM daily_prices').fetchone()[0])
 "
 
-# 3. DB에 오늘 데이터가 있으면 캐시만 갱신
-rm -f data/score_cache.pkl &amp;&amp; systemctl restart stockdigging
+# 3. DB에 오늘 데이터가 있으면 캐시 API로 갱신 (재시작 불필요)
+curl -X POST http://127.0.0.1:8000/api/cache/refresh
 
 # 4. DB에 오늘 데이터가 없으면 크론 수동 실행
 bash auto_daily.sh</pre>
@@ -510,7 +539,7 @@ rm -f data/score_cache.pkl &amp;&amp; systemctl restart stockdigging</pre>
 
 <div class="box box-info">
   <div class="box-label">CACHE_SCHEMA_VERSION</div>
-  버전을 올리면 서버 시작 시 기존 캐시를 무시하고 전체 재계산한다. 현재 버전: <code>"v8"</code> (2026-03-12 기준).
+  버전을 올리면 서버 시작 시 기존 캐시를 무시하고 전체 재계산한다. 현재 버전: <code>"v9"</code> (2026-03-19 기준).
 </div>
 
 
@@ -569,13 +598,21 @@ systemctl restart stockdigging</pre>
   서버에 접속하여 작업하기 전에 반드시 <code>docs/SERVER_TODO.md</code>를 확인한다. 이전 세션에서 중단된 작업이 있을 수 있다.
 </div>
 
-<p>2026-03-26 기준 미완료 작업:</p>
+<p>2026-03-27 기준:</p>
 
+<p><strong>완료 항목:</strong></p>
+<ul>
+  <li>&#x2705; 배당 데이터 수집 완료</li>
+  <li>&#x2705; auto_quarterly.sh 크론 등록 완료</li>
+  <li>&#x2705; yfinance &rarr; FMP 전환 완료 (2026-03-27)</li>
+</ul>
+
+<p><strong>미완료 항목:</strong></p>
 <ul class="checklist">
-  <li>배당 데이터 수집 (<code>collect_kr_dividends_dart_api.py --all</code>)</li>
-  <li>서버 재시작 (캐시 갱신)</li>
-  <li>auto_daily.sh 정상 작동 확인 (다음 07:00 KST 이후)</li>
-  <li>auto_quarterly.sh 크론 등록 (2026-03-15 기준 미등록 상태)</li>
+  <li>FMP 연간 플랜 전환 (월간 만료 전)</li>
+  <li>배당/기술적매매 스코어링 기준 조정 (<code>scoring.py</code>)</li>
+  <li>모니터링 시스템 (UptimeRobot + Telegram)</li>
+  <li>자동 백업 (S3/GCS)</li>
 </ul>
 
 
@@ -586,7 +623,8 @@ systemctl restart stockdigging</pre>
 
 <div class="ascii-diagram">/var/www/stockdigging/
 ├── quick_server.py          # FastAPI 메인 서버
-├── auto_daily.sh            # 매일 크론
+├── auto_daily.sh            # KR 매일 크론
+├── auto_daily_us.sh         # US 매일 크론 (FMP)
 ├── auto_monthly.sh          # 매월 크론
 ├── auto_quarterly.sh        # 분기 크론
 ├── run_batch.py             # 데이터 수집 CLI
@@ -612,6 +650,8 @@ systemctl restart stockdigging</pre>
 │
 ├── scripts/
 │   ├── collection/          # 데이터 수집 스크립트 (핵심 7개 + _archive/ 34개)
+│   │   ├── collect_us_prices_fmp.py   # FMP US 가격 수집
+│   │   └── calc_us_valuations_fmp.py  # FMP US 밸류에이션 계산
 │   ├── automation/          # auto_*.sh 원본
 │   └── management/          # 대회/포트폴리오 관리
 │
@@ -638,6 +678,7 @@ systemctl restart stockdigging</pre>
 │
 ├── logs/                    # 크론 로그
 │   ├── batch_daily.log
+│   ├── batch_daily_us.log
 │   ├── cron_monthly.log
 │   └── cron_quarterly.log
 │
@@ -653,7 +694,7 @@ systemctl restart stockdigging</pre>
 <table>
   <tr><th>우선순위</th><th>과제</th><th>상태</th><th>예상 소요</th><th>비고</th></tr>
   <tr><td><strong>P1</strong></td><td>PostgreSQL 전환</td><td>미착수</td><td>3주</td><td>SQLite 동시성 한계 해소</td></tr>
-  <tr><td><strong>P1</strong></td><td>US 상용 API 전환</td><td>미착수</td><td>2주</td><td>yfinance 비공식 API 의존 탈피</td></tr>
+  <tr><td><strong>P1</strong></td><td>US 상용 API 전환</td><td>완료</td><td>-</td><td>FMP 전환 완료 (2026-03-27)</td></tr>
   <tr><td><strong>P1</strong></td><td>모니터링 도입</td><td>미착수</td><td>1주</td><td>크론 실패/서버 다운 알림</td></tr>
   <tr><td><strong>P2</strong></td><td>CI/CD 구축</td><td>미착수</td><td>2주</td><td>GitHub Actions + 자동 배포</td></tr>
   <tr><td><strong>P2</strong></td><td>scoring.py 분리</td><td>미착수</td><td>2주</td><td>1,907줄 단일 파일 리팩토링</td></tr>
@@ -669,7 +710,7 @@ systemctl restart stockdigging</pre>
 
 
 <div class="footer">
-  StockDigging &nbsp;|&nbsp; 운영 플레이북 &nbsp;|&nbsp; 2026-03-26 &nbsp;|&nbsp; 내부 운영용
+  StockDigging &nbsp;|&nbsp; 운영 플레이북 &nbsp;|&nbsp; 2026-03-27 &nbsp;|&nbsp; 내부 운영용
 </div>
 
 </div>
