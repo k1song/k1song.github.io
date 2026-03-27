@@ -407,6 +407,12 @@ systemctl reload nginx</pre>
   <tr><td><strong>원인</strong></td><td>크론탭 미등록, 스크립트 경로/권한 오류, 크론 데몬 중지</td></tr>
   <tr><td><strong>해결</strong></td><td>아래 순서로 확인</td></tr>
 </table>
+
+<div class="box box-info">
+  <div class="box-label">이메일 알림 (2026-03-27~)</div>
+  크론 배치 완료 시 이메일 알림이 발송된다 (성공 ✅ / 실패 ❌). <strong>매일 이메일 자체가 오지 않았다면, 크론이 아예 실행되지 않은 것이다.</strong> 이 경우 아래 SSH 확인부터 진행한다.
+</div>
+
 <pre># 1. 크론탭 등록 확인
 crontab -l
 
@@ -461,6 +467,7 @@ print(c.execute('SELECT MAX(date) FROM daily_prices').fetchone()[0])
 
 # 3. DB에 오늘 데이터가 있으면 캐시 API로 갱신 (재시작 불필요)
 curl -X POST http://127.0.0.1:8000/api/cache/refresh
+# 또는: admin.html &gt; 📡 서버 상태 탭 &gt; 🔄 캐시 갱신 버튼
 
 # 4. DB에 오늘 데이터가 없으면 크론 수동 실행
 bash auto_daily.sh</pre>
@@ -638,14 +645,17 @@ systemctl restart stockdigging</pre>
   <li>&#x2705; 배당 데이터 수집 완료</li>
   <li>&#x2705; auto_quarterly.sh 크론 등록 완료</li>
   <li>&#x2705; yfinance &rarr; FMP 전환 완료 (2026-03-27)</li>
+  <li>&#x2705; 이메일 알림 시스템 구축 (2026-03-27)</li>
+  <li>&#x2705; 관리자 서버 상태 대시보드 (admin.html &#x1F4E1; 탭)</li>
+  <li>&#x2705; 관리자 데이터 재수집 기능 (admin.html &#x1F504; 버튼)</li>
 </ul>
 
 <p><strong>미완료 항목:</strong></p>
 <ul class="checklist">
+  <li>스코어링 전면 캘리브레이션 전환 (<code>docs/SCORING_CALIBRATION_OVERHAUL.md</code> 참고)</li>
   <li>FMP 연간 플랜 전환 (월간 만료 전)</li>
-  <li>배당/기술적매매 스코어링 기준 조정 (<code>scoring.py</code>)</li>
-  <li>모니터링 시스템 (UptimeRobot + Telegram)</li>
-  <li>자동 백업 (S3/GCS)</li>
+  <li>모니터링 강화: UptimeRobot (사이트 다운 감지)</li>
+  <li>자동 DB 백업 (S3/GCS)</li>
 </ul>
 
 
@@ -728,7 +738,8 @@ systemctl restart stockdigging</pre>
   <tr><th>우선순위</th><th>과제</th><th>상태</th><th>예상 소요</th><th>비고</th></tr>
   <tr><td><strong>P1</strong></td><td>PostgreSQL 전환</td><td>미착수</td><td>3주</td><td>SQLite 동시성 한계 해소</td></tr>
   <tr><td><strong>P1</strong></td><td>US 상용 API 전환</td><td>완료</td><td>-</td><td>FMP 전환 완료 (2026-03-27)</td></tr>
-  <tr><td><strong>P1</strong></td><td>모니터링 도입</td><td>미착수</td><td>1주</td><td>크론 실패/서버 다운 알림</td></tr>
+  <tr><td><strong>P1</strong></td><td>모니터링 도입</td><td>부분 완료</td><td>1주</td><td>이메일 알림 완료, UptimeRobot 미착수</td></tr>
+  <tr><td><strong>P1</strong></td><td>스코어링 캘리브레이션 전환</td><td>설계 완료</td><td>2주</td><td>30개 지표 백분위 전환</td></tr>
   <tr><td><strong>P2</strong></td><td>CI/CD 구축</td><td>미착수</td><td>2주</td><td>GitHub Actions + 자동 배포</td></tr>
   <tr><td><strong>P2</strong></td><td>scoring.py 분리</td><td>미착수</td><td>2주</td><td>1,907줄 단일 파일 리팩토링</td></tr>
   <tr><td><strong>P2</strong></td><td>결제 연동</td><td>미착수</td><td>2주</td><td>Toss Payments (PRO 플랜)</td></tr>
