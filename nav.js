@@ -10,6 +10,7 @@ const NAV_ITEMS = [
     items: [
       { title: '사업 소개서 (IR)', href: '/docs/stockdigging/ir.html' },
       { title: '비판 검토 및 대응', href: '/docs/stockdigging/rebuttal.html' },
+      { title: '재반박 검토 및 대응', href: '/docs/stockdigging/rebuttal-v2.html' },
     ]
   },
   {
