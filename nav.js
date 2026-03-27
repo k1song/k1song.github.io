@@ -17,6 +17,7 @@ const NAV_ITEMS = [
     items: [
       { title: '기술 아키텍처 검토', href: '/docs/stockdigging/tech-review.html' },
       { title: '운영 플레이북', href: '/docs/stockdigging/ops-playbook.html' },
+      { title: '스코어링 v2 설계서', href: '/docs/stockdigging/scoring-v2.html' },
     ]
   },
 ];
