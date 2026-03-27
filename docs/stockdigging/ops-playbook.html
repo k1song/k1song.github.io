@@ -112,8 +112,8 @@ FMP ────&gt; (US 가격+밸류에이션)
 FMP ────&gt; (US 재무)
 
 [크론 자동화]
-16:00 KST 매일(월~토) ──&gt; auto_daily.sh     (KR: 가격 &gt; 기술 &gt; 밸류에이션 &gt; 대회 &gt; 캐시)
-06:00 KST 매일(월~금) ──&gt; auto_daily_us.sh   (US: FMP가격 &gt; 기술 &gt; FMP밸류 &gt; 캐시)
+16:00 KST 매일(월~토) ──&gt; auto_daily.sh     (KR: 가격 &gt; 기술 &gt; 밸류에이션 &gt; 실전검증 &gt; 캐시)
+06:00 KST 매일(월~금) ──&gt; auto_daily_us.sh   (US: FMP가격 &gt; 기술 &gt; FMP밸류 &gt; 실전검증 &gt; 캐시)
 매월 1일 00:00 UTC ────&gt; auto_monthly.sh (종목목록 &gt; 캘리브레이션)
 분기 (8회/년) ─────────&gt; auto_quarterly.sh (재무제표 &gt; 캘리브레이션)
 
@@ -185,8 +185,8 @@ print('최신 밸류:', c.execute('SELECT MAX(date) FROM valuations').fetchone()
 
 <table>
   <tr><th>시간 (UTC)</th><th>주기</th><th>스크립트</th><th>로그 파일</th><th>설명</th></tr>
-  <tr><td>07:00 (16:00 KST)</td><td>매일 월~토</td><td>auto_daily.sh</td><td>logs/batch_daily.log</td><td>KR: 가격, 기술적, 밸류에이션, 대회, 캐시갱신</td></tr>
-  <tr><td>21:00 (06:00 KST)</td><td>매일 월~금</td><td>auto_daily_us.sh</td><td>logs/batch_daily_us.log</td><td>US: FMP 가격, 기술적, FMP 밸류에이션, 캐시갱신</td></tr>
+  <tr><td>07:00 (16:00 KST)</td><td>매일 월~토</td><td>auto_daily.sh</td><td>logs/batch_daily.log</td><td>KR: 가격, 기술적, 밸류에이션, 실전검증, 캐시갱신</td></tr>
+  <tr><td>21:00 (06:00 KST)</td><td>매일 월~금</td><td>auto_daily_us.sh</td><td>logs/batch_daily_us.log</td><td>US: FMP 가격, 기술적, FMP 밸류에이션, 실전검증, 캐시갱신</td></tr>
   <tr><td>00:00</td><td>매월 1일</td><td>auto_monthly.sh</td><td>logs/cron_monthly.log</td><td>종목목록 최신화, 캘리브레이션</td></tr>
   <tr><td>00:00</td><td>4/1, 5/16, 8/15, 11/15</td><td>auto_quarterly.sh</td><td>logs/cron_quarterly.log</td><td>분기 재무제표 1차 수집</td></tr>
   <tr><td>00:00</td><td>4/7, 5/22, 8/21, 11/21</td><td>auto_quarterly.sh</td><td>logs/cron_quarterly.log</td><td>분기 재무제표 2차 (누락 보완)</td></tr>
@@ -213,7 +213,7 @@ crontab -l</pre>
   <tr><td>1</td><td>KR 가격 수집</td><td>run_batch.py --market KR --step price</td><td>~3분</td></tr>
   <tr><td>2</td><td>KR 기술적 지표</td><td>run_batch.py --market KR --step technical</td><td>~2분</td></tr>
   <tr><td>3</td><td>KR 밸류에이션 계산</td><td>calc_kr_valuations.py</td><td>~2분</td></tr>
-  <tr><td>4</td><td>모의투자 대회 스냅샷</td><td>update_competition.py</td><td>~1분</td></tr>
+  <tr><td>4</td><td>실전검증 스냅샷</td><td>update_competition.py</td><td>~1분</td></tr>
   <tr><td>5</td><td>사전등록 시뮬레이션</td><td>curl /admin/run-pending-simulations</td><td>~1분</td></tr>
   <tr><td>6</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
 </table>
@@ -232,20 +232,22 @@ crontab -l</pre>
 <!-- ============================================================ -->
 <!-- 4-2. auto_daily_us.sh 상세 -->
 <!-- ============================================================ -->
-<h2 class="chapter">4-2. auto_daily_us.sh 상세 (US 전용, FMP 기반, 4단계)</h2>
-<p>매일 크론이 실행하는 US 일일 배치의 4단계 흐름이다.</p>
+<h2 class="chapter">4-2. auto_daily_us.sh 상세 (US 전용, FMP 기반, 6단계)</h2>
+<p>매일 크론이 실행하는 US 일일 배치의 6단계 흐름이다.</p>
 
 <table>
   <tr><th>단계</th><th>작업</th><th>스크립트</th><th>소요 시간</th></tr>
   <tr><td>1</td><td>US 가격 수집 (FMP)</td><td>collect_us_prices_fmp.py</td><td>~10분</td></tr>
   <tr><td>2</td><td>US 기술적 지표</td><td>run_batch.py --market US --step technical</td><td>~2분</td></tr>
   <tr><td>3</td><td>US 밸류에이션 계산 (FMP + DB TTM)</td><td>calc_us_valuations_fmp.py</td><td>~45분</td></tr>
-  <tr><td>4</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
+  <tr><td>4</td><td>실전검증 스냅샷</td><td>update_competition.py</td><td>~1분</td></tr>
+  <tr><td>5</td><td>사전등록 시뮬레이션</td><td>curl /admin/run-pending-simulations</td><td>~1분</td></tr>
+  <tr><td>6</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
 </table>
 
 <div class="box box-info">
   <div class="box-label">FMP 전환 (2026-03-27)</div>
-  US 데이터 소스가 yfinance에서 FMP로 전면 교체되었다 (2026-03-27). FMP /stable/ 엔드포인트를 사용하며, PER/PBR은 DB 재무제표(TTM) + FMP 종가로 직접 계산한다. ROE/영업이익률/배당수익률은 FMP key-metrics-ttm/ratios-ttm에서 조회한다.
+  US 데이터 소스가 yfinance에서 FMP로 전면 교체되었다. FMP /stable/ 엔드포인트를 사용하며, PER/PBR은 DB 재무제표(TTM) + FMP 종가로 직접 계산한다. ROE/영업이익률/배당수익률은 FMP key-metrics-ttm/ratios-ttm에서 조회한다. US 밸류에이션 소요 시간(~45분)은 FMP Starter 플랜 rate limit(300/분) 때문이며, Ultimate 전환 시 ~5분으로 단축 가능.
 </div>
 
 
@@ -643,7 +645,7 @@ systemctl restart stockdigging</pre>
 ├── auto_quarterly.sh        # 분기 크론
 ├── run_batch.py             # 데이터 수집 CLI
 ├── calibrate_scoring.py     # 스코어 캘리브레이션
-├── competition_manager.py   # 모의투자 대회 관리
+├── competition_manager.py   # 실전검증 관리
 │
 ├── calculators/
 │   ├── scoring.py           # 스코어링 엔진 (1,907줄)
