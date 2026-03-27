@@ -6,22 +6,19 @@
  */
 const NAV_ITEMS = [
   {
-    category: 'StockDigging',
+    category: 'Business',
     items: [
       { title: '사업 소개서 (IR)', href: '/docs/stockdigging/ir.html' },
       { title: '비판 검토 및 대응', href: '/docs/stockdigging/rebuttal.html' },
-      { title: '기술 아키텍처 검토', href: '/docs/stockdigging/tech-review.html' },
-      { title: '운영 플레이북', href: '/docs/stockdigging/ops-playbook.html' },
-      // 여기에 문서 추가: { title: '제목', href: '/docs/stockdigging/파일명.html' },
     ]
   },
-  // 새 카테고리 추가 예시:
-  // {
-  //   category: '카테고리명',
-  //   items: [
-  //     { title: '문서 제목', href: '/docs/경로/파일.html' },
-  //   ]
-  // },
+  {
+    category: 'Engineering',
+    items: [
+      { title: '기술 아키텍처 검토', href: '/docs/stockdigging/tech-review.html' },
+      { title: '운영 플레이북', href: '/docs/stockdigging/ops-playbook.html' },
+    ]
+  },
 ];
 
 function renderSidebar() {
