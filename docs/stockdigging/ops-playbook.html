@@ -360,20 +360,38 @@ print('US 종목수:', c.execute(\"SELECT COUNT(*) FROM stocks WHERE market='US'
 "</pre>
 
 <h3 class="section">6-7. 유지보수 모드 (nginx 제어)</h3>
-<pre># 유지보수 모드 켜기:
-# /etc/nginx/sites-enabled/stockdigging 에서
-#   proxy_pass http://127.0.0.1:8000;
-# 을 다음으로 변경:
-#   return 503;
-systemctl reload nginx
+<p><strong>유지보수 모드 켜기</strong> (사이트 접속 시 503 에러 표시):</p>
+<pre># 1. nginx 설정 파일 열기
+nano /etc/nginx/sites-enabled/stockdigging
 
-# 유지보수 모드 끄기:
-# return 503; 을 다시 proxy_pass로 변경
+# 2. 아래 줄을 찾아서:
+#    proxy_pass http://127.0.0.1:8000;
+#
+#    다음으로 변경:
+#    return 503;
+
+# 3. 저장 (Ctrl+O → Enter → Ctrl+X) 후 적용
 systemctl reload nginx</pre>
 
-<div class="box box-info">
-  <div class="box-label">참고</div>
-  유지보수 모드는 반드시 nginx 설정 파일에서 제어한다. <code>quick_server.py</code>의 MAINTENANCE_MODE 변수가 아님에 주의.
+<p><strong>유지보수 모드 끄기</strong> (사이트 정상 복구):</p>
+<pre># 1. 같은 파일 열기
+nano /etc/nginx/sites-enabled/stockdigging
+
+# 2. 아래 줄을 찾아서:
+#    return 503;
+#
+#    다시 원복:
+#    proxy_pass http://127.0.0.1:8000;
+
+# 3. 저장 후 적용
+systemctl reload nginx</pre>
+
+<p><strong>현재 상태 확인</strong> (유지보수 모드인지 아닌지):</p>
+<pre>grep -n "return 503\|proxy_pass" /etc/nginx/sites-enabled/stockdigging</pre>
+
+<div class="box box-accept">
+  <div class="box-label">주의</div>
+  유지보수 모드는 반드시 nginx 설정 파일에서 제어한다. <code>quick_server.py</code>의 MAINTENANCE_MODE 변수가 아님에 주의. 유지보수 모드 중에도 서버(uvicorn)는 계속 실행 중이므로, 작업 끝나면 반드시 끄기를 실행할 것.
 </div>
 
 
