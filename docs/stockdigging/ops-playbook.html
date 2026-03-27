@@ -709,6 +709,85 @@ systemctl restart stockdigging</pre>
 </div>
 
 
+<!-- ============================================================ -->
+<!-- 14. 데이터 소스 전략 -->
+<!-- ============================================================ -->
+<h2 class="chapter">14. 데이터 소스 전략</h2>
+<p>현재 데이터 소스 구성과 향후 업그레이드 계획을 정리한다.</p>
+
+<h3 class="section">14-1. 현재 소스 구조 (종가 기준)</h3>
+
+<div class="ascii-diagram">[KR 데이터]
+  종가 (OHLCV)   ← pykrx      (KRX 비공식 크롤링, 무료, 종가만)
+  재무제표        ← DART API   (금감원 공식, 무료, 분기)
+  배당금          ← DART API   (공식, 연간)
+  시가총액        ← pykrx      → stocks.market_cap
+
+[US 데이터]
+  종가 (OHLCV)   ← FMP Starter  /stable/quote     (SLA 보장, $19/월 연간)
+  밸류에이션      ← FMP + DB TTM  calc_us_valuations_fmp.py
+  재무제표        ← FMP Starter  /stable/income-statement 등
+  시가총액        ← FMP          → stocks.market_cap 자동갱신
+
+[공통]
+  기술적 지표     ← 자체 계산    calculators/technical.py
+  스코어링        ← 자체 계산    calculators/scoring.py
+  캘리브레이션    ← 월 1회       calibrate_scoring.py</div>
+
+<h3 class="section">14-2. FMP 플랜 비교</h3>
+<table>
+  <tr><th>항목</th><th>Starter ($19/월)</th><th>Premium ($49/월)</th><th>Ultimate ($99/월)</th></tr>
+  <tr><td>API 호출</td><td>300/분</td><td>750/분</td><td><strong>3,000/분</strong></td></tr>
+  <tr><td>US 커버리지</td><td>✅</td><td>✅</td><td>✅</td></tr>
+  <tr><td><strong>글로벌 (KR 포함)</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong></td></tr>
+  <tr><td>분기 재무제표</td><td>✅</td><td>✅</td><td>✅</td></tr>
+  <tr><td>가격 히스토리</td><td>5년</td><td>전체</td><td>전체</td></tr>
+  <tr><td><strong>배치/벌크 API</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (크론 45분→2분)</td></tr>
+  <tr><td><strong>ETF 홀딩스</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (ETF 6전략 스코어링 가능)</td></tr>
+  <tr><td><strong>13F 기관투자</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (스마트머니 스크리닝)</td></tr>
+  <tr><td><strong>어닝콜 트랜스크립트</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (AI 실적 요약 콘텐츠)</td></tr>
+  <tr><td><strong>1분봉 인트라데이</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (실시간 스코어링 기반)</td></tr>
+</table>
+
+<div class="box box-info">
+  <div class="box-label">현재 플랜: Starter ($19/월 연간)</div>
+  US 종가 + 분기 재무제표 + TTM 지표. PER/PBR은 DB 재무제표 + FMP 종가로 직접 계산 (SEC 공시 기반, yfinance보다 정확). 2026-03-27 교차검증 완료: PER 차이 3~10%, 시가총액 100% 일치, 배당수익률은 FMP가 더 정확.
+</div>
+
+<h3 class="section">14-3. KR 데이터 소스 비교</h3>
+<table>
+  <tr><th>항목</th><th>pykrx (현재)</th><th>한국투자증권 OpenAPI</th><th>FMP Ultimate</th></tr>
+  <tr><td>데이터 원본</td><td>KRX (거래소)</td><td>KRX (거래소)</td><td>KRX (간접)</td></tr>
+  <tr><td>가격 갱신</td><td><strong>종가만</strong></td><td><strong>실시간</strong> (웹소켓)</td><td>20분 지연</td></tr>
+  <tr><td>비용</td><td>무료</td><td>무료 (계좌 필요)</td><td>$99/월에 포함</td></tr>
+  <tr><td>안정성</td><td>⚠️ 비공식</td><td>✅ 공식</td><td>✅ 상용</td></tr>
+  <tr><td>재무제표</td><td>❌</td><td>❌</td><td>✅ (DART 간접)</td></tr>
+  <tr><td>실시간 스코어링</td><td>❌ 불가</td><td>✅ 가능</td><td>⚠️ 20분 지연</td></tr>
+</table>
+
+<div class="box box-rebut">
+  <div class="box-label">핵심 원칙</div>
+  <ul style="margin-bottom:0">
+    <li><strong>KR 재무제표 = DART가 유일한 공식 원본.</strong> FMP/Bloomberg도 한국 재무는 DART에서 가져온다. 대체 불가.</li>
+    <li><strong>KR 종가 = pykrx로 충분.</strong> 비공식이지만 KRX 원본 데이터. 실시간 필요 시 한국투자증권 OpenAPI로 전환.</li>
+    <li><strong>부채비율 = 한국 표준 (부채총계/자본총계).</strong> KR/US 동일 기준. yfinance의 debt/equity(이자부부채)와 다름.</li>
+  </ul>
+</div>
+
+<h3 class="section">14-4. 업그레이드 로드맵</h3>
+<table>
+  <tr><th>Phase</th><th>내용</th><th>비용 (월)</th><th>전제 조건</th></tr>
+  <tr><td><strong>Phase 1 (현재)</strong></td><td>종가 기준. KR: pykrx+DART, US: FMP Starter</td><td>$25</td><td>-</td></tr>
+  <tr><td><strong>Phase 2</strong></td><td>FMP Ultimate. 벌크 API + ETF/13F/어닝콜 + 글로벌</td><td>$105</td><td>PRO 유료 사용자 확보</td></tr>
+  <tr><td><strong>Phase 3</strong></td><td>실시간 스코어링. 한투 WebSocket(KR) + FMP 1분봉(US). TOP 500 장중 1분 갱신.</td><td>$123</td><td>Phase 2 + 서버 업그레이드 ($24 서버)</td></tr>
+</table>
+
+<div class="box box-partial">
+  <div class="box-label">Phase 3 실시간 스코어링 참고</div>
+  30개 지표 중 18개가 가격 의존 (PER, PBR, 시가총액, 모멘텀, RSI, 52주고점, 배당수익률 등). 장중 2~3% 변동 시 총점이 바뀌고 TOP100 순위 변동 가능. 재무 지표(ROE, 부채비율 등)는 분기 캐시 유지. TOP 500 가격지표만 재계산 시 ~9초 소요 → 1분 주기 충분.
+</div>
+
+
 <div class="footer">
   StockDigging &nbsp;|&nbsp; 운영 플레이북 &nbsp;|&nbsp; 2026-03-27 &nbsp;|&nbsp; 내부 운영용
 </div>
