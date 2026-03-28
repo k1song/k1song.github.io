@@ -558,7 +558,7 @@ systemctl restart stockdigging</pre>
 
 <ul class="checklist">
   <li><code>scoring.py</code> 수정</li>
-  <li><code>quick_server.py</code>에서 <code>CACHE_SCHEMA_VERSION</code> 증가 (예: "v8" &gt; "v9")</li>
+  <li><code>quick_server.py</code>에서 <code>CACHE_SCHEMA_VERSION</code> 증가 (예: "v9" &gt; "v10")</li>
   <li>로컬 테스트: 캐시 삭제 후 서버 시작</li>
 </ul>
 <pre># 로컬 테스트 (PowerShell)
@@ -579,7 +579,7 @@ rm -f data/score_cache.pkl &amp;&amp; systemctl restart stockdigging</pre>
 
 <div class="box box-info">
   <div class="box-label">CACHE_SCHEMA_VERSION</div>
-  버전을 올리면 서버 시작 시 기존 캐시를 무시하고 전체 재계산한다. 현재 버전: <code>"v9"</code> (2026-03-19 기준).
+  버전을 올리면 서버 시작 시 기존 캐시를 무시하고 전체 재계산한다. 현재 버전: <code>"v10"</code> (2026-03-28 Scoring v2).
 </div>
 
 
@@ -686,9 +686,9 @@ systemctl restart stockdigging</pre>
 │   │   ├── valuation.py     #   NAVER Finance 밸류에이션
 │   │   └── stock_list.py    #   종목목록
 │   └── us/                  # US 수집기
-│       ├── price.py         #   yfinance 종가
+│       ├── price.py         #   레거시(yfinance) — 미사용
 │       ├── financial.py     #   FMP 재무제표
-│       ├── valuation.py     #   yfinance 밸류에이션
+│       ├── valuation.py     #   레거시(yfinance) — 미사용
 │       └── stock_list.py    #   종목목록
 │
 ├── scripts/

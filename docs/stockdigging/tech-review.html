@@ -135,8 +135,8 @@
  +---------------------------------------------------------------------------+
  |                         외부 데이터 소스                                   |
  +---------------------------------------------------------------------------+
- | DART API   | Naver Finance | yfinance   | FMP API    | KRX/NASDAQ        |
- | (공식,무료) | (비공식,무료)  | (비공식)   | (유료$79/yr)| (종목목록)         |
+ | DART API   | Naver Finance | FMP API    | FMP API    | KRX/NASDAQ        |
+ | (공식,무료) | (비공식,무료)  | (Starter)  | ($29/mo)   | (종목목록)         |
  +------+-----+------+--------+-----+------+-----+------+------+------------+
         |            |              |            |             |
         v            v              v            v             v
@@ -173,7 +173,7 @@
        v
  +----------------------------+
  |  score_cache.pkl (17MB)    |
- |  SCHEMA_VERSION = "v9"     |
+ |  SCHEMA_VERSION = "v10"     |
  |  warm_cache: ~5.5분        |
  +-------------+--------------+
                |
@@ -414,7 +414,7 @@
   <tr><th>우선순위</th><th>권고</th><th>기대 효과</th></tr>
   <tr><td><span class="badge badge-ok">P0 완료</span></td><td>레거시 스크립트 34개를 <code>scripts/collection/_archive/</code>로 이동 (2026-03-26). 핵심 7개 유지.</td><td>코드 가독성 확보</td></tr>
   <tr><td><span class="badge badge-crit">P0</span></td><td>db/ 폴더 DART zip 파일 200+개 정리 (외부 스토리지 이동)</td><td>저장 공간 수 GB 확보</td></tr>
-  <tr><td><span class="badge badge-crit">P1</span></td><td>US 상용 데이터 API 전환 (Polygon.io 또는 Alpha Vantage Pro)</td><td>yfinance 의존도 제거, SLA 확보</td></tr>
+  <tr><td><span class="badge badge-ok">P1 완료</span></td><td>US 데이터 FMP Starter로 전면 전환 완료 (2026-03-28)</td><td>yfinance 의존도 제거, SLA 확보</td></tr>
   <tr><td><span class="badge badge-warn">P2</span></td><td>KR 밸류에이션 2단계 &rarr; 1단계 통합</td><td>파이프라인 단순화, 실패 시 원자성 보장</td></tr>
   <tr><td><span class="badge badge-warn">P2</span></td><td>is_active에 비활성화 일자 컬럼 추가, 백테스트 시 시점별 필터링</td><td>생존편향 완화</td></tr>
 </table>
@@ -775,7 +775,7 @@
 <h3 class="section">6-5. 캐시 및 설정 파일</h3>
 <table>
   <tr><th>파일</th><th>상태</th><th>비고</th></tr>
-  <tr><td><code>data/score_cache.pkl</code> (17MB)</td><td><span class="badge badge-ok">정상</span></td><td>SCHEMA_VERSION="v9", 자동 무효화</td></tr>
+  <tr><td><code>data/score_cache.pkl</code> (17MB)</td><td><span class="badge badge-ok">정상</span></td><td>SCHEMA_VERSION="v10" (Scoring v2), 자동 무효화</td></tr>
   <tr><td><code>data/scoring_calibration.json</code></td><td><span class="badge badge-ok">정상</span></td><td>월간 자동 갱신</td></tr>
   <tr><td><code>.env</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>API 키 평문 저장, Secret Manager 전환 권고</td></tr>
   <tr><td><code>upload_db.py</code></td><td><span class="badge badge-ok">완료</span></td><td>비밀번호 → .env 환경변수로 이동 (2026-03-26)</td></tr>
