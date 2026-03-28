@@ -228,7 +228,7 @@
   <tr><th>테이블</th><th>추정 레코드</th><th>역할</th><th>비고</th></tr>
   <tr><td><code>stocks</code></td><td>~9,400</td><td>종목 마스터 (KR 2,663 + US 6,716)</td><td>market_cap 컬럼 KR만 유효</td></tr>
   <tr><td><code>daily_prices</code></td><td>~5,200,000</td><td>일별 OHLCV</td><td>가장 큰 테이블</td></tr>
-  <tr><td><code>financials</code></td><td>~120,000</td><td>분기 재무제표</td><td>DART + yfinance 혼합</td></tr>
+  <tr><td><code>financials</code></td><td>~120,000</td><td>분기 재무제표</td><td>DART (KR) + FMP API (US)</td></tr>
   <tr><td><code>valuations</code></td><td>~190,000</td><td>밸류에이션 (PER/PBR/ROE 등)</td><td>계산값+수집값 혼재</td></tr>
   <tr><td><code>technical_indicators</code></td><td>~2,600</td><td>기술적 지표 (RSI, MACD 등)</td><td>일별 갱신</td></tr>
   <tr><td><code>batch_logs</code></td><td>~500</td><td>배치 실행 로그</td><td>-</td></tr>
@@ -333,9 +333,9 @@
 <h4 class="subsection">핵심 스크립트 — 매일 사용 (7개)</h4>
 <table>
   <tr><th>스크립트</th><th>주기</th><th>데이터 소스</th><th>대상</th></tr>
-  <tr><td><code>collectors/kr/price.py</code></td><td>매일</td><td>Naver Finance</td><td>KR 일별 가격</td></tr>
+  <tr><td><code>collectors/kr/price.py</code></td><td>매일</td><td>pykrx (KRX)</td><td>KR 일별 가격</td></tr>
   <tr><td><code>collectors/kr/valuation.py</code></td><td>매일</td><td>Naver Finance API</td><td>KR PER/PBR/EPS/BPS/배당</td></tr>
-  <tr><td><code>collectors/us/price.py</code></td><td>매일</td><td>yfinance</td><td>US 일별 가격</td></tr>
+  <tr><td><code>collect_us_prices_fmp.py</code></td><td>매일</td><td>FMP API <span class="badge badge-ok">전환 완료</span></td><td>US 일별 가격</td></tr>
   <tr><td><code>calc_kr_valuations.py</code></td><td>매일</td><td>내부 계산</td><td>KR ROE/부채비율/영업이익률</td></tr>
   <tr><td><code>merge_kr_valuations.py</code></td><td>매일</td><td>내부 병합</td><td>KR 밸류에이션 10개 필드 통합</td></tr>
   <tr><td><code>calculators/technical.py</code></td><td>매일</td><td>내부 계산</td><td>RSI/MACD/BB 등 기술적 지표</td></tr>
@@ -346,7 +346,7 @@
 <table>
   <tr><th>스크립트</th><th>주기</th><th>데이터 소스</th><th>대상</th></tr>
   <tr><td><code>collectors/kr/financial.py</code></td><td>분기</td><td>DART API</td><td>KR 분기 재무제표</td></tr>
-  <tr><td><code>collectors/us/financial.py</code></td><td>분기</td><td>yfinance</td><td>US 분기 재무제표</td></tr>
+  <tr><td><code>collectors/us/financial.py</code></td><td>분기</td><td>FMP API</td><td>US 분기 재무제표</td></tr>
   <tr><td><code>collectors/kr/stock_list.py</code></td><td>월간</td><td>KRX</td><td>KR 종목 목록 갱신</td></tr>
   <tr><td><code>collectors/us/stock_list.py</code></td><td>월간</td><td>NASDAQ</td><td>US 종목 목록 갱신</td></tr>
   <tr><td><code>rebuild_valuations_quarterly.py</code></td><td>분기</td><td>내부 재계산</td><td>historical 밸류에이션 재구축</td></tr>
@@ -356,7 +356,7 @@
 <table>
   <tr><th>분류</th><th>스크립트</th><th>비고</th></tr>
   <tr><td>구버전 수집기</td><td><code>collect_kr_fnguide.py</code>, <code>collect_kr_fy2022_dart.py</code>, <code>collect_2022_valuations.py</code>, <code>collect_kr_valuations_krx.py</code>, <code>collect_kr_dividends_dart.py</code></td><td>현재 collectors/ 구조로 대체됨</td></tr>
-  <tr><td>구버전 US 수집기</td><td><code>collect_us_financials_sec.py</code>, <code>collect_us_fmp.py</code>, <code>collect_us_fmp_annual.py</code>, <code>collect_us_prices_fmp.py</code>, <code>collect_us_shares_fmp.py</code>, <code>collect_us_financials_quarterly_yf.py</code></td><td>FMP/SEC 시도 흔적, 현재 yfinance 사용</td></tr>
+  <tr><td>구버전 US 수집기</td><td><code>collect_us_financials_sec.py</code>, <code>collect_us_fmp.py</code>, <code>collect_us_fmp_annual.py</code>, <code>collect_us_prices_fmp.py</code>, <code>collect_us_shares_fmp.py</code>, <code>collect_us_financials_quarterly_yf.py</code></td><td>FMP/SEC 시도 흔적, 일부 FMP 전환 완료</td></tr>
   <tr><td>파이프라인 래퍼</td><td><code>pipeline_final.py</code>, <code>pipeline_kr_expand.py</code>, <code>pipeline_kr_full_recollect.py</code>, <code>pipeline_overnight.py</code>, <code>pipeline_us_expand.py</code></td><td>auto_daily.sh로 대체됨</td></tr>
   <tr><td>체인 스크립트</td><td><code>chain_shares_then_kr.py</code>, <code>chain_us_then_kr.py</code></td><td>1회성 데이터 보정용</td></tr>
   <tr><td>분석/백테스트</td><td><code>backtest_bot_cohort.py</code>, <code>backtest_portfolio_tuning.py</code>, <code>sensitivity_*.py</code> (5개), <code>step1_atr_optimization.py</code> 등</td><td>연구 목적, 운영과 무관</td></tr>
@@ -373,22 +373,18 @@
 
 <table>
   <tr><th>항목</th><th>KR</th><th>US</th><th>위험도</th></tr>
-  <tr><td>가격 데이터</td><td>Naver Finance (비공식, 안정)</td><td>yfinance (비공식, 불안정)</td><td><span class="badge badge-warn">중간</span></td></tr>
-  <tr><td>밸류에이션</td><td>Naver Finance API (비공식, 안정)</td><td>yfinance (비공식, 불안정)</td><td><span class="badge badge-warn">중간</span></td></tr>
-  <tr><td>재무제표</td><td>DART API (공식, 무료, 안정)</td><td>yfinance (비공식, 불안정)</td><td><span class="badge badge-warn">중간</span></td></tr>
-  <tr><td>종목목록</td><td>KRX (공식)</td><td>NASDAQ (공식)</td><td><span class="badge badge-ok">낮음</span></td></tr>
-  <tr><td>보조 데이터</td><td>-</td><td>FMP (유료 $79/yr, 250콜/일)</td><td><span class="badge badge-crit">높음</span></td></tr>
+  <tr><td>가격 데이터</td><td>pykrx / KRX (공식, 안정)</td><td>FMP API (유료, 안정) <span class="badge badge-ok">전환 완료</span></td><td><span class="badge badge-ok">낮음</span></td></tr>
+  <tr><td>밸류에이션</td><td>Naver Finance API (비공식, 안정)</td><td>FMP API (유료, 안정) <span class="badge badge-ok">전환 완료</span></td><td><span class="badge badge-ok">낮음</span></td></tr>
+  <tr><td>재무제표</td><td>DART API (공식, 무료, 안정)</td><td>FMP API (유료, 안정) <span class="badge badge-ok">전환 완료</span></td><td><span class="badge badge-ok">낮음</span></td></tr>
+  <tr><td>종목목록</td><td>pykrx / KRX (공식)</td><td>NASDAQ (공식)</td><td><span class="badge badge-ok">낮음</span></td></tr>
+  <tr><td>벤치마크 지수</td><td colspan="2">yfinance (KOSPI ^KS11 / S&amp;P500 ^GSPC) — pykrx/FMP 전환 필요</td><td><span class="badge badge-warn">중간</span></td></tr>
 </table>
 
 <div class="box box-amber">
   <div class="box-label">개선 필요 — US 데이터 의존성</div>
-  <p>US 데이터의 3대 축(가격, 밸류에이션, 재무)이 모두 yfinance에 의존한다. yfinance는 비공식 API이며:</p>
-  <ul>
-    <li>Yahoo Finance의 웹 구조 변경 시 즉시 깨질 수 있음 (과거 3회 이상 발생)</li>
-    <li>Rate limiting이 예고 없이 변경됨</li>
-    <li>SLA/보장 없음, 상업적 사용에 대한 약관 모호</li>
-  </ul>
-  <p>FMP API는 유료($79/년)이지만 무료 250콜/일 제한으로 6,700개 종목 전체를 커버하지 못한다. 상용 API(Polygon.io, Alpha Vantage Pro 등) 전환이 필요하다.</p>
+  <p>US 데이터 3대 축(가격, 밸류에이션, 재무)이 모두 FMP API로 전환 완료(2026-03-27~28). 일일 자동화(<code>auto_daily_us.sh</code>)에서 FMP 스크립트를 직접 호출한다. <code>run_batch.py</code> 파이프라인의 <code>collectors/us/price.py</code>, <code>collectors/us/valuation.py</code>에 구 yfinance 코드가 남아있지만 크론에서 호출되지 않는 레거시이다.</p>
+  <p>남은 yfinance 의존: <strong>벤치마크 지수</strong>(KOSPI ^KS11, S&amp;P500 ^GSPC)만 <code>quick_server.py</code>에서 yfinance를 사용한다. pykrx(KOSPI) + FMP(S&amp;P500) 전환이 필요하다.</p>
+  <p>FMP API Starter 플랜($29/월)으로 업그레이드 완료. 분당 300회 요청 가능.</p>
 </div>
 
 <div class="box box-amber">
@@ -718,7 +714,7 @@
   <tr><th>DB</th><th>테이블</th><th>상태</th><th>비고</th></tr>
   <tr><td>stockpulse</td><td><code>stocks</code></td><td><span class="badge badge-ok">정상</span></td><td>KR market_cap 정상, US market_cap 부재(valuations에 있음)</td></tr>
   <tr><td>stockpulse</td><td><code>daily_prices</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>520만 rows — 인덱스 최적화, 파티셔닝 필요</td></tr>
-  <tr><td>stockpulse</td><td><code>financials</code></td><td><span class="badge badge-ok">정상</span></td><td>DART + yfinance 혼합이나 정상 동작</td></tr>
+  <tr><td>stockpulse</td><td><code>financials</code></td><td><span class="badge badge-ok">정상</span></td><td>DART (KR) + FMP API (US)</td></tr>
   <tr><td>stockpulse</td><td><code>valuations</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>계산값/수집값 혼재 — 분리 권고</td></tr>
   <tr><td>stockpulse</td><td><code>technical_indicators</code></td><td><span class="badge badge-ok">정상</span></td><td>일별 갱신, 정상 동작</td></tr>
   <tr><td>stockpulse</td><td><code>batch_logs</code></td><td><span class="badge badge-ok">정상</span></td><td>수집 이력 추적용</td></tr>
@@ -729,12 +725,12 @@
 <h3 class="section">6-3. 수집 스크립트</h3>
 <table>
   <tr><th>스크립트</th><th>상태</th><th>비고</th></tr>
-  <tr><td><code>collectors/kr/price.py</code></td><td><span class="badge badge-ok">정상</span></td><td>Naver Finance, 매일 실행</td></tr>
-  <tr><td><code>collectors/kr/valuation.py</code></td><td><span class="badge badge-legacy">사용 중단</span></td><td>Naver 수집 중단 (2026-03-26). calc_kr_valuations.py만 사용.</td></tr>
+  <tr><td><code>collectors/kr/price.py</code></td><td><span class="badge badge-ok">정상</span></td><td>pykrx (KRX), 매일 실행</td></tr>
+  <tr><td><code>collectors/kr/valuation.py</code></td><td><span class="badge badge-ok">정상</span></td><td>Naver Finance API, 매일 PER/PBR/EPS/BPS/배당 수집</td></tr>
   <tr><td><code>collectors/kr/financial.py</code></td><td><span class="badge badge-ok">정상</span></td><td>DART API, 분기 실행</td></tr>
   <tr><td><code>collectors/kr/stock_list.py</code></td><td><span class="badge badge-ok">정상</span></td><td>KRX, 월간 실행</td></tr>
-  <tr><td><code>collectors/us/price.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>yfinance 의존 — 안정성 위험</td></tr>
-  <tr><td><code>collectors/us/financial.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>yfinance 의존 — 안정성 위험</td></tr>
+  <tr><td><code>collectors/us/price.py</code></td><td><span class="badge badge-legacy">레거시</span></td><td>yfinance — <code>collect_us_prices_fmp.py</code>로 대체됨</td></tr>
+  <tr><td><code>collectors/us/financial.py</code></td><td><span class="badge badge-ok">정상</span></td><td>FMP API 전환 완료 (2026-03-28)</td></tr>
   <tr><td><code>collectors/us/stock_list.py</code></td><td><span class="badge badge-ok">정상</span></td><td>NASDAQ 공식 데이터</td></tr>
   <tr><td><code>calc_kr_valuations.py</code></td><td><span class="badge badge-warn">개선 필요</span></td><td>merge와 2단계 구조 — 통합 권고</td></tr>
   <tr><td><code>merge_kr_valuations.py</code></td><td><span class="badge badge-legacy">사용 중단</span></td><td>auto_daily.sh에서 제거 (2026-03-26). DART calc만 사용.</td></tr>
@@ -746,9 +742,9 @@
   <tr><td><code>collect_2022_valuations.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>2022년 1회성</td></tr>
   <tr><td><code>collect_kr_valuations_krx.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>KRX 방식, Naver로 대체</td></tr>
   <tr><td><code>collect_kr_dividends_dart.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>배당 별도 수집, 현재 미사용</td></tr>
-  <tr><td><code>collect_us_financials_sec.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>SEC EDGAR, yfinance로 대체</td></tr>
+  <tr><td><code>collect_us_financials_sec.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>SEC EDGAR, FMP API로 대체</td></tr>
   <tr><td><code>collect_us_fmp.py</code> / <code>_annual.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 시도 흔적</td></tr>
-  <tr><td><code>collect_us_prices_fmp.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 가격, yfinance로 대체</td></tr>
+  <tr><td><code>collect_us_prices_fmp.py</code></td><td><span class="badge badge-ok">정상</span></td><td>FMP 가격, auto_daily_us.sh에서 사용 중</td></tr>
   <tr><td><code>collect_us_shares_fmp.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>FMP 주식수, 미사용</td></tr>
   <tr><td><code>collect_us_financials_quarterly_yf.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>구버전, collectors/로 대체</td></tr>
   <tr><td><code>pipeline_final.py</code></td><td><span class="badge badge-legacy">정리 대상</span></td><td>auto_daily.sh로 대체</td></tr>
