@@ -22,6 +22,13 @@ const NAV_ITEMS = [
       { title: '스코어링 v3 설계서', href: '/docs/stockdigging/scoring-v3.html' },
     ]
   },
+  {
+    category: 'Research',
+    items: [
+      { title: '전략 최적화 보고서', href: '/docs/stockdigging/optimization-strategy.html' },
+      { title: 'ML 지표 가중치 최적화', href: '/docs/stockdigging/ml-indicator.html' },
+    ]
+  },
 ];
 
 function renderSidebar() {
