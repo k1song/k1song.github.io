@@ -36,6 +36,8 @@ const NAV_ITEMS = [
         desc: '10년(2016-2026) Daily Rebalance 시뮬레이션 — 25개 지표 Sensitivity + 시장 국면별 분석 + 최적 가중치', date: '2026-04-04' },
       { title: 'ML 지표 가중치 최적화 v2', href: '/docs/stockdigging/ml-indicator.html',
         desc: 'Random Forest ML — 시장 추세(30/60/90일) → 최적 지표 가중치 예측 | KR/US/US-only × N=5~100', date: '2026-04-04' },
+      { title: 'Walk-forward OOS 검증', href: '/docs/stockdigging/walkforward-oos.html',
+        desc: '최적 가중치의 미래 예측력 검증 — 6라운드 Expanding Window × 251봇 × 3시장 | 과적합 분석 + 안정 지표 도출', date: '2026-04-04' },
     ]
   },
 ];
