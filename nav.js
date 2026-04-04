@@ -32,10 +32,10 @@ const NAV_ITEMS = [
   {
     category: 'Research',
     items: [
-      { title: '전략 최적화 보고서', href: '/docs/stockdigging/optimization-strategy.html',
-        desc: '301명 봇 × 3대회 × 95코호트 × 174실험 — 적응형 벤치마크 전략 최적화', date: '2026-03-23' },
-      { title: 'ML 지표 가중치 최적화', href: '/docs/stockdigging/ml-indicator.html',
-        desc: '머신러닝 기반 지표별 가중치 최적화 실험 및 분석', date: '2026-04-01' },
+      { title: '전략 최적화 보고서 v2', href: '/docs/stockdigging/optimization-strategy.html',
+        desc: '10년(2016-2026) Daily Rebalance 시뮬레이션 — 25개 지표 Sensitivity + 시장 국면별 분석 + 최적 가중치', date: '2026-04-04' },
+      { title: 'ML 지표 가중치 최적화 v2', href: '/docs/stockdigging/ml-indicator.html',
+        desc: 'Random Forest ML — 시장 추세(30/60/90일) → 최적 지표 가중치 예측 | KR/US/US-only × N=5~100', date: '2026-04-04' },
     ]
   },
 ];
