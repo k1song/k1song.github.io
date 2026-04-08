@@ -38,6 +38,8 @@ const NAV_ITEMS = [
         desc: 'Random Forest ML — 시장 추세(30/60/90일) → 최적 지표 가중치 예측 | KR/US/US-only × N=5~100', date: '2026-04-04' },
       { title: 'Walk-forward OOS 검증', href: '/docs/stockdigging/walkforward-oos.html',
         desc: '최적 가중치의 미래 예측력 검증 — 6라운드 Expanding Window × 251봇 × 3시장 | 과적합 분석 + 안정 지표 도출', date: '2026-04-04' },
+      { title: '시장 국면별 전략 최적화', href: '/docs/stockdigging/regime-strategy.html',
+        desc: '국면 조건부 2-Step 최적화 — 상승/횡보/하락 × 30d/90d × 1/5/30/60d | KR·US·US-only 3차 실험 종합 분석', date: '2026-04-08' },
     ]
   },
 ];
