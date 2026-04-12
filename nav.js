@@ -20,7 +20,7 @@ const NAV_ITEMS = [
     category: 'Engineering',
     items: [
       { title: '기술 아키텍처 독립 검토', href: '/docs/stockdigging/tech-review.html',
-        desc: 'DB/파이프라인/스코어링/인프라 4명 전문가 독립 검토 보고서', date: '2026 Q1' },
+        desc: 'DB/파이프라인/스코어링/인프라 독립 검토 — P0~P3 로드맵 25건 진행 현황 포함', date: '2026-04-12' },
       { title: '운영 플레이북', href: '/docs/stockdigging/ops-playbook.html',
         desc: '매일 확인사항, 크론 스케줄, 트러블슈팅, 서버 명령어 — 실전 운영 가이드', date: '2026-03-26' },
       { title: '스코어링 v2 설계서', href: '/docs/stockdigging/scoring-v2.html',
