@@ -40,6 +40,8 @@ const NAV_ITEMS = [
         desc: '최적 가중치의 미래 예측력 검증 — 6라운드 Expanding Window × 251봇 × 3시장 | 과적합 분석 + 안정 지표 도출', date: '2026-04-04' },
       { title: '시장 국면별 전략 최적화', href: '/docs/stockdigging/regime-strategy.html',
         desc: '국면 조건부 2-Step 최적화 — 상승/횡보/하락 × 30d/90d × 1/5/30/60d | KR·US·US-only 3차 실험 종합 분석', date: '2026-04-08' },
+      { title: 'ML 검증 결과 및 한계 (2026 Q2)', href: '/docs/stockdigging/ml-validation-2026q2.html',
+        desc: 'LightGBM 81-feature walk-forward + 2025 holdout 검증. 표면 통계는 양호하나 추천 검수 시 거래정지·penny stock 다수 → 차기 ML 설계 함정 회피 자료', date: '2026-04-14' },
     ]
   },
 ];
