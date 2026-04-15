@@ -27,6 +27,8 @@ const NAV_ITEMS = [
         desc: '30개 지표 재설계 — 중복 제거, 신규 6개 지표, 캘리브레이션 체계화', date: '2026-03-27' },
       { title: '스코어링 v3 설계서', href: '/docs/stockdigging/scoring-v3.html',
         desc: 'P1 백분위 강제 피팅 + 지표 8개 교체 + 기술적매매 전면 재설계 (일목균형표/스토캐스틱)', date: '2026-03-30' },
+      { title: '스코어링 v4 설계서', href: '/docs/stockdigging/scoring-v4.html',
+        desc: 'safe_earn_stability TTM detrended CV + div_cash_quality 도입 (금융주 배당성향 대체, NVIDIA 토큰 배당 차단)', date: '2026-04-15' },
     ]
   },
   {
