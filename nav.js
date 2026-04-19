@@ -44,6 +44,12 @@ const NAV_ITEMS = [
         desc: '국면 조건부 2-Step 최적화 — 상승/횡보/하락 × 30d/90d × 1/5/30/60d | KR·US·US-only 3차 실험 종합 분석', date: '2026-04-08' },
       { title: 'ML 검증 결과 및 한계 (2026 Q2)', href: '/docs/stockdigging/ml-validation-2026q2.html',
         desc: 'LightGBM 81-feature walk-forward + 2025 holdout 검증. 표면 통계는 양호하나 추천 검수 시 거래정지·penny stock 다수 → 차기 ML 설계 함정 회피 자료', date: '2026-04-14' },
+      { title: 'Walk-Forward Rolling 종합', href: '/docs/stockdigging/wfr-summary-20260420.html',
+        desc: 'Scoring v3 × 5 Splits(S1-S5) × 3 Markets(KR/US/US-only) × 5 Horizons TOP 1 종합 — ROBUST 조합 도출, KR 2025 KOSPI +75.6% 특이성 분석', date: '2026-04-20' },
+      { title: 'WFR 전체 가중치 상세', href: '/docs/stockdigging/wfr-weights-20260420.html',
+        desc: '모든 Split × Market × Horizon × Regime × Style의 Step 1/2 가중치 표 (75 tables) — regime별 지표·전략 비중 참조용', date: '2026-04-20' },
+      { title: 'Top-K 균등 평균 실험', href: '/docs/stockdigging/wfr-topk-20260420.html',
+        desc: 'US-only K=1/5/10/20 TOP K 조합 가중치 균등 평균의 OOS α 비교 — TOP 1 편향 완화 효과 검증, split/horizon별 최적 K 분석', date: '2026-04-20' },
     ]
   },
 ];
