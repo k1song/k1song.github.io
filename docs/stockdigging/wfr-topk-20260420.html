@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>StockDigging - Top-K 균등 평균 실험 (2026-04-20)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  header { border-bottom: 2px solid #334155; padding-bottom: 20px; margin-bottom: 32px; }
+  h1 { color: #f8fafc; margin: 0 0 8px 0; }
+  .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  nav.toc { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+  nav.toc h2 { color: #60a5fa; font-size: 1.1rem; margin: 0 0 12px 0; }
+  nav.toc ol { margin: 0; padding-left: 20px; }
+  nav.toc ol ol { padding-left: 20px; margin-top: 6px; }
+  nav.toc a { color: #cbd5e1; text-decoration: none; }
+  nav.toc a:hover { color: #60a5fa; text-decoration: underline; }
+  h2 { color: #60a5fa; font-size: 1.4rem; margin-top: 40px; padding-bottom: 8px; border-bottom: 1px solid #334155; }
+  h3 { color: #93c5fd; font-size: 1.15rem; margin-top: 28px; }
+  p.meta-info { color: #64748b; font-size: 0.85rem; font-family: monospace; margin: 4px 0 12px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 20px 0; background: #1e293b; font-size: 0.9rem; }
+  th { background: #334155; color: #f8fafc; text-align: left; padding: 8px 12px; font-size: 0.88rem; }
+  td { padding: 7px 12px; border-top: 1px solid #2d3748; }
+  td.best { background: #134e4a; font-weight: 700; }
+  td.best-col { color: #fbbf24; font-weight: 700; }
+  tr:hover td { background: #273449; }
+  .callout { background: #1e293b; border-left: 4px solid #60a5fa; padding: 16px 20px; margin: 20px 0; border-radius: 4px; }
+  .callout h4 { color: #f8fafc; margin-top: 0; }
+  .callout.success { border-left-color: #10b981; }
+  .callout.warn { border-left-color: #fbbf24; }
+  a.back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 16px; }
+  a.back-link:hover { text-decoration: underline; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid #334155; color: #64748b; font-size: 0.85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<a href="/" class="back-link">← 홈으로</a>
+<a href="./wfr-summary-20260420.html" class="back-link" style="margin-left:16px;">← 요약 보고서로</a>
+
+<header>
+  <h1>Top-K 균등 평균 실험 보고서</h1>
+  <div class="subtitle">US-only · K=1/5/10/20 TOP K 조합 가중치 평균의 OOS α 비교</div>
+  <div class="subtitle" style="margin-top:4px;">작성: 2026-04-20 | 실행시간 3.46시간 (207.8분)</div>
+</header>
+
+<nav class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li><a href="#purpose">실험 목적</a></li>
+    <li><a href="#method">방법론</a>
+      <ol>
+        <li><a href="#method-topk">Top K 균등 평균 정의</a></li>
+        <li><a href="#method-step">Step 1 vs Step 2 차이</a></li>
+      </ol>
+    </li>
+    <li><a href="#results">Split별 결과</a>
+      <ol>
+        <li><a href="#sp-S1_2023">S1_2023</a></li>
+        <li><a href="#sp-S2_2024">S2_2024</a></li>
+        <li><a href="#sp-S3_2025">S3_2025 (최장 OOS)</a></li>
+        <li><a href="#sp-S4_2026">S4_2026 (최신 학습)</a></li>
+        <li><a href="#sp-S5_IS55">S5_IS55 (IS 5.5y)</a></li>
+      </ol>
+    </li>
+    <li><a href="#summary">종합 분석</a>
+      <ol>
+        <li><a href="#sum-avg">K별 전체 평균</a></li>
+        <li><a href="#sum-freq">Best K Frequency</a></li>
+      </ol>
+    </li>
+    <li><a href="#recommend">실전 K 선택 권고</a></li>
+    <li><a href="#next">남은 작업</a></li>
+  </ol>
+</nav>
+
+<h2 id="purpose">1. 실험 목적</h2>
+<p>WFR Step 2 최적화에서 <strong>TOP 1 단일 가중치 조합 선정</strong>의 극단적 편향 우려 완화. 비슷한 IS 성과를 내는 상위 K개 조합의 가중치를 <strong>균등 평균</strong>하여 단일 가중치로 사용할 때 OOS α가 어떻게 변하는지 측정.</p>
+
+<p><strong>관찰된 의문</strong>: 예를 들어 US S4 moat 30d-sideways regime에서 TOP 1은 <code>growth=85, debt=15</code> (+7.73%p), TOP 5 평균 <code>growth=86, debt=14</code> (+7.12%p). 수익률 0.6%p 차이지만 가중치는 거의 같아 "평균화가 실제 도움되는가?" 검증 필요.</p>
+
+<h2 id="method">2. 방법론</h2>
+
+<h3 id="method-topk">2.1 Top K 균등 평균 정의</h3>
+<p>10,626개 가중치 조합(5지표 합 100%, 5% grid) 중 IS 수익률 상위 K개 추출 → 5-벡터 가중치 단순 평균:</p>
+<pre>w_avg = (1/K) × Σ (w_1, w_2, ..., w_K)</pre>
+
+<h3 id="method-step">2.2 Step 1 vs Step 2 차이</h3>
+<ul>
+  <li><strong>Step 1 (style 내 지표 가중치)</strong>: AVG_R 캐시 재사용 → 즉시 재계산 (3초)</li>
+  <li><strong>Step 2 (전략 간 blending 가중치)</strong>: 10,626 조합 avg_r 전량 재계산 필요 → ~35분/split × 5 splits = ~3시간</li>
+  <li><strong>OOS 평가</strong>: K=1/5/10/20 각각 가중치로 TOP 20 종목 재선정 후 수익률 측정 (수초)</li>
+</ul>
+
+<h2 id="results">3. Split별 결과</h2>
+
+<p>각 셀: <span style="color:#10b981;">α%p</span> <span style="color:#64748b;">pos/total</span>. ★ 배경 = Best K.</p>
+
+<h3 id="sp-S1_2023">S1_2023</h3><p class="meta-info">IS 2019-06-01 ~ 2022-12-31 → OOS 2023-01-01 ~ 2023-12-31</p><table class="ktbl"><thead><tr><th>Horizon</th><th>K=1</th><th>K=5</th><th>K=10</th><th>K=20</th><th>Best K</th></tr></thead><tbody><tr><td><strong>5d</strong></td><td><span style="color:#10b981;">+0.66%p</span> <span style="color:#64748b;font-size:0.8em;">7/9</span></td><td class="best"><span style="color:#10b981;">+0.68%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+0.55%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+0.58%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best-col">K=5</td></tr><tr><td><strong>30d</strong></td><td><span style="color:#10b981;">+3.75%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td><span style="color:#10b981;">+3.98%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td class="best"><span style="color:#10b981;">+4.95%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td><span style="color:#10b981;">+4.42%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td class="best-col">K=10</td></tr><tr><td><strong>60d</strong></td><td><span style="color:#10b981;">+11.65%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+13.17%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+11.78%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best"><span style="color:#10b981;">+15.95%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best-col">K=20</td></tr><tr><td><strong>125d</strong></td><td class="best"><span style="color:#10b981;">+18.89%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+17.86%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+17.13%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+13.23%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best-col">K=1</td></tr><tr><td><strong>250d</strong></td><td class="best"><span style="color:#10b981;">+41.79%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+37.86%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+28.25%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+35.16%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=1</td></tr></tbody></table><h3 id="sp-S2_2024">S2_2024</h3><p class="meta-info">IS 2020-06-01 ~ 2023-12-31 → OOS 2024-01-01 ~ 2024-12-31</p><table class="ktbl"><thead><tr><th>Horizon</th><th>K=1</th><th>K=5</th><th>K=10</th><th>K=20</th><th>Best K</th></tr></thead><tbody><tr><td><strong>5d</strong></td><td class="best"><span style="color:#10b981;">+0.87%p</span> <span style="color:#64748b;font-size:0.8em;">6/8</span></td><td><span style="color:#10b981;">+0.82%p</span> <span style="color:#64748b;font-size:0.8em;">6/8</span></td><td><span style="color:#10b981;">+0.86%p</span> <span style="color:#64748b;font-size:0.8em;">6/8</span></td><td><span style="color:#10b981;">+0.79%p</span> <span style="color:#64748b;font-size:0.8em;">6/8</span></td><td class="best-col">K=1</td></tr><tr><td><strong>30d</strong></td><td><span style="color:#ef4444;">-1.00%p</span> <span style="color:#64748b;font-size:0.8em;">3/8</span></td><td><span style="color:#ef4444;">-1.24%p</span> <span style="color:#64748b;font-size:0.8em;">2/8</span></td><td><span style="color:#ef4444;">-0.98%p</span> <span style="color:#64748b;font-size:0.8em;">3/8</span></td><td class="best"><span style="color:#ef4444;">-0.95%p</span> <span style="color:#64748b;font-size:0.8em;">1/8</span></td><td class="best-col">K=20</td></tr><tr><td><strong>60d</strong></td><td class="best"><span style="color:#10b981;">+3.45%p</span> <span style="color:#64748b;font-size:0.8em;">7/8</span></td><td><span style="color:#10b981;">+3.04%p</span> <span style="color:#64748b;font-size:0.8em;">6/8</span></td><td><span style="color:#10b981;">+2.88%p</span> <span style="color:#64748b;font-size:0.8em;">5/8</span></td><td><span style="color:#10b981;">+2.56%p</span> <span style="color:#64748b;font-size:0.8em;">5/8</span></td><td class="best-col">K=1</td></tr><tr><td><strong>125d</strong></td><td class="best"><span style="color:#10b981;">+7.79%p</span> <span style="color:#64748b;font-size:0.8em;">8/8</span></td><td><span style="color:#10b981;">+7.07%p</span> <span style="color:#64748b;font-size:0.8em;">7/8</span></td><td><span style="color:#10b981;">+7.14%p</span> <span style="color:#64748b;font-size:0.8em;">8/8</span></td><td><span style="color:#10b981;">+6.87%p</span> <span style="color:#64748b;font-size:0.8em;">7/8</span></td><td class="best-col">K=1</td></tr><tr><td><strong>250d</strong></td><td><span style="color:#10b981;">+17.88%p</span> <span style="color:#64748b;font-size:0.8em;">8/8</span></td><td><span style="color:#10b981;">+20.24%p</span> <span style="color:#64748b;font-size:0.8em;">8/8</span></td><td><span style="color:#10b981;">+23.18%p</span> <span style="color:#64748b;font-size:0.8em;">8/8</span></td><td class="best"><span style="color:#10b981;">+26.21%p</span> <span style="color:#64748b;font-size:0.8em;">8/8</span></td><td class="best-col">K=20</td></tr></tbody></table><h3 id="sp-S3_2025">S3_2025</h3><p class="meta-info">IS 2021-06-01 ~ 2024-12-31 → OOS 2025-01-01 ~ 2026-04-05</p><table class="ktbl"><thead><tr><th>Horizon</th><th>K=1</th><th>K=5</th><th>K=10</th><th>K=20</th><th>Best K</th></tr></thead><tbody><tr><td><strong>5d</strong></td><td class="best"><span style="color:#10b981;">+1.08%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+1.01%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+0.98%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+0.97%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=1</td></tr><tr><td><strong>30d</strong></td><td><span style="color:#10b981;">+6.99%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best"><span style="color:#10b981;">+7.22%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+7.13%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+7.06%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best-col">K=5</td></tr><tr><td><strong>60d</strong></td><td class="best"><span style="color:#10b981;">+13.40%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+11.68%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+11.12%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+12.06%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=1</td></tr><tr><td><strong>125d</strong></td><td><span style="color:#10b981;">+53.42%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best"><span style="color:#10b981;">+53.86%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+53.65%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+53.79%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=5</td></tr><tr><td><strong>250d</strong></td><td><span style="color:#10b981;">+172.07%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+172.42%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best"><span style="color:#10b981;">+173.00%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+170.29%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=10</td></tr></tbody></table><h3 id="sp-S4_2026">S4_2026</h3><p class="meta-info">IS 2022-06-01 ~ 2025-12-31 → OOS 2026-01-01 ~ 2026-04-05</p><table class="ktbl"><thead><tr><th>Horizon</th><th>K=1</th><th>K=5</th><th>K=10</th><th>K=20</th><th>Best K</th></tr></thead><tbody><tr><td><strong>5d</strong></td><td class="best"><span style="color:#10b981;">+1.86%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+1.70%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+1.44%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+1.36%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best-col">K=1</td></tr><tr><td><strong>30d</strong></td><td class="best"><span style="color:#10b981;">+9.55%p</span> <span style="color:#64748b;font-size:0.8em;">7/7</span></td><td><span style="color:#10b981;">+8.10%p</span> <span style="color:#64748b;font-size:0.8em;">6/7</span></td><td><span style="color:#10b981;">+8.11%p</span> <span style="color:#64748b;font-size:0.8em;">6/7</span></td><td><span style="color:#10b981;">+6.34%p</span> <span style="color:#64748b;font-size:0.8em;">7/7</span></td><td class="best-col">K=1</td></tr><tr><td><strong>60d</strong></td><td class="best"><span style="color:#10b981;">+21.26%p</span> <span style="color:#64748b;font-size:0.8em;">4/4</span></td><td><span style="color:#10b981;">+20.50%p</span> <span style="color:#64748b;font-size:0.8em;">4/4</span></td><td><span style="color:#10b981;">+17.26%p</span> <span style="color:#64748b;font-size:0.8em;">4/4</span></td><td><span style="color:#10b981;">+9.39%p</span> <span style="color:#64748b;font-size:0.8em;">4/4</span></td><td class="best-col">K=1</td></tr></tbody></table><h3 id="sp-S5_IS55">S5_IS55</h3><p class="meta-info">IS 2019-06-01 ~ 2024-12-31 → OOS 2025-01-01 ~ 2026-04-05</p><table class="ktbl"><thead><tr><th>Horizon</th><th>K=1</th><th>K=5</th><th>K=10</th><th>K=20</th><th>Best K</th></tr></thead><tbody><tr><td><strong>5d</strong></td><td><span style="color:#10b981;">+1.20%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td><span style="color:#10b981;">+1.28%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best"><span style="color:#10b981;">+1.34%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+1.20%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=10</td></tr><tr><td><strong>30d</strong></td><td><span style="color:#10b981;">+0.43%p</span> <span style="color:#64748b;font-size:0.8em;">5/9</span></td><td><span style="color:#10b981;">+0.95%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td class="best"><span style="color:#10b981;">+1.19%p</span> <span style="color:#64748b;font-size:0.8em;">5/9</span></td><td><span style="color:#10b981;">+0.78%p</span> <span style="color:#64748b;font-size:0.8em;">5/9</span></td><td class="best-col">K=10</td></tr><tr><td><strong>60d</strong></td><td><span style="color:#10b981;">+2.28%p</span> <span style="color:#64748b;font-size:0.8em;">7/9</span></td><td><span style="color:#10b981;">+2.50%p</span> <span style="color:#64748b;font-size:0.8em;">7/9</span></td><td><span style="color:#10b981;">+3.66%p</span> <span style="color:#64748b;font-size:0.8em;">8/9</span></td><td class="best"><span style="color:#10b981;">+4.29%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=20</td></tr><tr><td><strong>125d</strong></td><td><span style="color:#10b981;">+20.76%p</span> <span style="color:#64748b;font-size:0.8em;">5/9</span></td><td><span style="color:#10b981;">+25.42%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td><span style="color:#10b981;">+25.06%p</span> <span style="color:#64748b;font-size:0.8em;">6/9</span></td><td class="best"><span style="color:#10b981;">+28.36%p</span> <span style="color:#64748b;font-size:0.8em;">7/9</span></td><td class="best-col">K=20</td></tr><tr><td><strong>250d</strong></td><td><span style="color:#10b981;">+57.56%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+55.90%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best"><span style="color:#10b981;">+57.99%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td><span style="color:#10b981;">+56.76%p</span> <span style="color:#64748b;font-size:0.8em;">9/9</span></td><td class="best-col">K=10</td></tr></tbody></table>
+
+<h2 id="summary">4. 종합 분석</h2>
+
+<h3 id="sum-avg">4.1 K별 전체 평균 α</h3>
+<p>5 splits × 5 horizons × 9 regimes 중 활성 조합(n=23)의 평균:</p>
+<table>
+<thead><tr><th>K</th><th>평균 α</th><th>K=1 대비</th></tr></thead>
+<tbody>
+<tr><td><strong>K=1</strong></td><td style="color:#10b981;">+20.33%p</td><td>+0.00</td></tr><tr><td><strong>K=5</strong></td><td style="color:#10b981;">+20.26%p</td><td>-0.07</td></tr><tr><td><strong>K=10</strong></td><td style="color:#10b981;">+19.90%p</td><td>-0.43</td></tr><tr><td><strong>K=20</strong></td><td style="color:#10b981;">+19.89%p</td><td>-0.44</td></tr>
+</tbody>
+</table>
+
+<div class="callout success">
+<h4>결론: K별 전체 차이 미미 (±0.5%p 이내)</h4>
+<p>어떤 K를 사용하든 평균적으로는 큰 차이 없음. 하지만 <strong>split/horizon별로는 최적 K가 다름</strong>.</p>
+</div>
+
+<h3 id="sum-freq">4.2 Horizon별 Best K Frequency</h3>
+<p>5 splits 중 해당 horizon에서 최고 α를 기록한 K값 빈도:</p>
+<table>
+<thead><tr><th>Horizon</th><th>K=1</th><th>K=5</th><th>K=10</th><th>K=20</th></tr></thead>
+<tbody>
+<tr><td><strong>5d</strong></td><td><strong style="color:#fbbf24;">3</strong></td><td>1</td><td>1</td><td>0</td></tr><tr><td><strong>30d</strong></td><td>1</td><td>1</td><td><strong style="color:#fbbf24;">2</strong></td><td>1</td></tr><tr><td><strong>60d</strong></td><td><strong style="color:#fbbf24;">3</strong></td><td>0</td><td>0</td><td>2</td></tr><tr><td><strong>125d</strong></td><td><strong style="color:#fbbf24;">2</strong></td><td>1</td><td>0</td><td>1</td></tr><tr><td><strong>250d</strong></td><td>1</td><td>0</td><td><strong style="color:#fbbf24;">2</strong></td><td>1</td></tr>
+</tbody>
+</table>
+
+<h3>4.3 Split별 특성 해석</h3>
+<table>
+<thead><tr><th>Split</th><th>특성</th><th>해석</th></tr></thead>
+<tbody>
+<tr><td>S3_2025</td><td>모든 K 거의 동일</td><td>최적해 매우 안정적 (ROBUST, 평면 peak)</td></tr>
+<tr><td><strong>S4_2026</strong></td><td class="best"><strong>K=1 3연속 우승 (5d/30d/60d)</strong></td><td>2025 상승장 학습이 peak 형태</td></tr>
+<tr><td><strong>S5_IS55</strong></td><td class="best"><strong>K=10/20 우세</strong></td><td>긴 IS (5.5y) — 오래된 데이터 분산 확보 필요</td></tr>
+<tr><td>S2_2024</td><td>혼재 (K=1 + K=20)</td><td>regime 일관성 부족</td></tr>
+<tr><td>S1_2023</td><td>horizon별 상이</td><td>-</td></tr>
+</tbody>
+</table>
+
+<h2 id="recommend">5. 실전 K 선택 권고</h2>
+
+<table>
+<thead><tr><th>상황</th><th>권고 K</th><th>이유</th></tr></thead>
+<tbody>
+<tr><td>Rolling 3.5y IS (기본)</td><td class="best"><strong>K=5 균등 평균</strong></td><td>극단 회피 + 수익률 유지</td></tr>
+<tr><td>최신 학습 강화 (S4 같은 peak)</td><td>K=1</td><td>TOP 1 우위 명확</td></tr>
+<tr><td>긴 IS 확장 (S5 같은 5.5y)</td><td>K=10~20</td><td>오래된 데이터 분산 완화</td></tr>
+<tr><td>대회/리더보드 (최대값)</td><td>K=1</td><td>best single combination</td></tr>
+<tr><td>개인 투자 (안정성)</td><td>K=10</td><td>중간값 성과, 편향 최소</td></tr>
+</tbody>
+</table>
+
+<div class="callout warn">
+<h4>주의사항</h4>
+<ul>
+  <li>이 실험은 <strong>US-only 시장만</strong> 수행. KR/US 전체는 미검증.</li>
+  <li>S4 K=1 우위는 OOS 63일로 통계력 제한. 추가 OOS 기간 누적 시 재평가 필요.</li>
+  <li>K별 선택은 <strong>horizon 및 regime별로 다를 수 있음</strong> — 단일 K 전 horizon 적용 시 차선책.</li>
+</ul>
+</div>
+
+<h2 id="next">6. 남은 작업</h2>
+<ul>
+  <li>[ ] KR/US 전체 시장 Top-K 추가 실험 (12 blocks × 35분 ≈ 7h)</li>
+  <li>[ ] horizon × regime별 최적 K 조합 표 (전체 맥락)</li>
+  <li>[ ] 수익률 가중 평균 (softmax β 조정) vs 균등 평균 비교 (현재 균등만)</li>
+  <li>[ ] 실전 적용 가중치 선정 (K + regime 조합 설계)</li>
+</ul>
+
+<footer>
+  <p>Walk-Forward Rolling Scoring v3 · Top-K 실험 · 2026-04-20</p>
+  <p><a href="./wfr-summary-20260420.html">▶ 요약 보고서</a> · <a href="./wfr-weights-20260420.html">▶ 전체 가중치 상세표</a></p>
+</footer>
+
+</div>
+</body>
+</html>
