@@ -50,6 +50,8 @@ const NAV_ITEMS = [
         desc: '모든 Split × Market × Horizon × Regime × Style의 Step 1/2 가중치 표 (75 tables) — regime별 지표·전략 비중 참조용', date: '2026-04-20' },
       { title: 'Top-K 균등 평균 실험', href: '/docs/stockdigging/wfr-topk-20260420.html',
         desc: 'US-only K=1/5/10/20 TOP K 조합 가중치 균등 평균의 OOS α 비교 — TOP 1 편향 완화 효과 검증, split/horizon별 최적 K 분석', date: '2026-04-20' },
+      { title: 'WFR 독립 검토 패널', href: '/docs/stockdigging/wfr-peer-review-20260420.html',
+        desc: '세계적 전문가 4명 가상 패널 (ML/DB/경제학/퀀트) × 설계자 반박 토론 — 총 20개 지적 중 13건 수용, Q1 현장 검증 후 기각 등', date: '2026-04-20' },
     ]
   },
 ];
