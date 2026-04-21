@@ -54,6 +54,8 @@ const NAV_ITEMS = [
         desc: '세계적 전문가 4명 가상 패널 (ML/DB/경제학/퀀트) × 설계자 반박 토론 — 총 20개 지적 중 13건 수용, Q1 현장 검증 후 기각 등', date: '2026-04-20' },
       { title: 'Top-K 3시장 종합', href: '/docs/stockdigging/wfr-topk-full-20260420.html',
         desc: 'KR/US/US-only × S1-S5 × K=1/5/10/20 전체 결과 — 시장별 K 특성 차이, horizon별 Best K Frequency, 업데이트된 실전 권고', date: '2026-04-20' },
+      { title: '⚠️ WFR Bias Correction', href: '/docs/stockdigging/wfr-bias-correction-20260421.html',
+        desc: 'Top 20% 필터 + Survivorship-free 재검증 — 기존 +172.07%p → 실제 -10.88%p (183%p 편향). 이전 WFR 결과 전면 재해석', date: '2026-04-21' },
     ]
   },
 ];

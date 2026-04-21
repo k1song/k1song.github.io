@@ -280,11 +280,22 @@
 <p>JSON에 std 계산 가능. <strong>즉시 Sharpe / IR 추가 계산 후 보고서 보강.</strong></p>
 </div>
 
-<h3 id="e4"><span class="comment-id">E4</span>Survivorship Bias</h3>
+<h3 id="e4"><span class="comment-id">E4</span>Survivorship Bias <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8rem;margin-left:8px;">확증됨 2026-04-21</span></h3>
 <blockquote class="econ">"2023-2026 OOS 기간 중 <strong>상장폐지 종목</strong>이 cache에서 제외됐는지? 평가 시점에 죽어있어 제외면 생존자 편향. 포함이면 -100% 반영 확인 필요."</blockquote>
 <div class="response">
-<div class="response-header">설계자 <span class="accept">수용 (중요)</span></div>
-<p><code>data/pipeline_cache/v2_*.pkl</code>의 유니버스 검증 필요. 각 시점의 <strong>당시 존재 종목</strong>으로 필터링되는지, 폐지 시 -100% 반영되는지.</p>
+<div class="response-header">설계자 <span class="accept">수용 (중요) → 🔴 확증</span></div>
+<p>2026-04-21 Survivorship-free 재빌드 + WFR S3 재실행으로 <strong>결정적으로 확증</strong>됨:</p>
+<ul>
+<li>기존 pipeline_cache는 is_active=1 (2,445개)만 포함 → 폐지 4,271개 제외</li>
+<li>Survivorship-free 재빌드 (6,713개) 후 WFR S3_2025 재실행 결과:
+<ul>
+<li>US-only 250d: <strong>+172.07 → -10.88%p</strong> (183%p 스윙)</li>
+<li>US-only 125d: <strong>+53.42 → -6.66%p</strong></li>
+<li>즉 기존 α 대부분이 survivorship bias였음</li>
+</ul>
+</li>
+<li>상세: <a href="./wfr-bias-correction-20260421.html" style="color:#60a5fa;">▶ WFR Bias Correction Report</a></li>
+</ul>
 </div>
 
 <h3 id="e5"><span class="comment-id">E5</span>regime n_days 불균형</h3>
