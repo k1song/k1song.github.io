@@ -385,6 +385,16 @@ tail -f /var/www/stockdigging/logs/patch.log
 # 실행 중인 배치 확인
 pgrep -fa python3</pre>
 
+<div class="box">
+  <div class="box-label">KR 금융주 cash_on_hand 주의사항 (2026-04-25 확인)</div>
+  <p>은행·증권·보험·카드사는 한국 회계기준(K-IFRS)상 현금 항목명이 <strong>"현금및예치금"</strong>으로 표기된다.
+  일반 기업의 "현금및현금성자산"과 다르므로, <code>collectors/kr/financial.py</code>에 두 키워드가 모두 포함돼 있어야 한다.</p>
+  <pre># collectors/kr/financial.py (line ~328)
+"cash_on_hand": find_amount(["현금및현금성자산", "현금 및 현금성자산",
+                              "현금및예치금", "현금 및 예치금"], "BS"),</pre>
+  <p>교차검증 (2026-04-25): 삼성전자·하나금융지주 등 10개 종목 DART API 대비 오차 0.0%</p>
+</div>
+
 <h3 class="section">7-6. nginx 라우팅</h3>
 <pre># 설정 파일 위치
 cat /etc/nginx/sites-enabled/stockdigging
@@ -518,6 +528,7 @@ curl http://127.0.0.1:8000/api/validation?code=XXXXX  # 404면 data.items=undefi
     <tr><td>2026-04</td><td>종목 상세 페이지 크래시</td><td>404 응답의 data.items.length 접근 → TypeError</td><td>!data.items null 체크 추가 (수정 완료)</td></tr>
     <tr><td>2026-04</td><td>외국인보유비율 데이터 없음</td><td>수집 함수 단위 테스트만, 배치 통합 테스트 미실시</td><td>run_daily에 valuation step 포함 확인</td></tr>
     <tr><td>2026-04</td><td>US 등락률 전부 "—"</td><td>USPriceCollector가 change_pct를 records dict에 추가 안 함</td><td>consecutive-close 계산 후 upsert 로직 추가 (수정 완료)</td></tr>
+  <tr><td>2026-04</td><td>KR 금융주(28개) cash_on_hand 전부 NULL</td><td>은행/증권/보험은 한국 회계기준상 "현금및예치금" 계정 사용 — "현금및현금성자산" 키워드로만 매핑 시 미수집</td><td>collectors/kr/financial.py에 "현금및예치금" 키워드 추가 + 패치 스크립트 실행으로 active 최신기 NULL=0 달성 (수정 완료)</td></tr>
   </table>
 </div>
 
@@ -585,7 +596,7 @@ curl http://127.0.0.1:8000/api/validation?code=XXXXX  # 404면 data.items=undefi
 
 <table>
   <tr><th>우선순위</th><th>항목</th><th>상태</th><th>비고</th></tr>
-  <tr><td>P1</td><td>KR financials.cash_on_hand 수집</td><td>진행 중</td><td>DART API로 채우기 (US 완료 후)</td></tr>
+  <tr><td>✅</td><td>KR financials.cash_on_hand 수집</td><td><strong>완료</strong></td><td>DART API 패치 완료. 금융주(은행/증권/보험) "현금및예치금" 키워드 추가. active+최신기 NULL=0 (2026-04-25)</td></tr>
   <tr><td>P1</td><td>Supabase 즐겨찾기 마이그레이션</td><td>설정 필요</td><td>Supabase 대시보드 SQL Editor 실행</td></tr>
   <tr><td>P1</td><td>Google OAuth 활성화</td><td>설정 필요</td><td>Supabase > Auth > Providers > Google</td></tr>
   <tr><td>P2</td><td>즐겨찾기 페이지 /favorites</td><td>미착수</td><td>Phase 5 후보</td></tr>

@@ -139,7 +139,7 @@
       <li>SQLite 동시성 — 크론 중 수동 작업 충돌 가능</li>
       <li>서버 단일 VPS — 단일 장애점</li>
       <li>DB 자동 백업 미구축</li>
-      <li>KR Cash on hand 미수집</li>
+      <li>KR Cash on hand ✅ 수집 완료 (2026-04-25 패치 — 금융주 "현금및예치금" 키워드 추가)</li>
     </ul>
   </div>
 </div>
@@ -474,7 +474,7 @@ Plan B — precomputed JSON (nginx 정적 서빙)
   <tr><td rowspan="5">재무건전성</td><td>부채비율</td><td>✅</td><td>total_liabilities / total_equity</td></tr>
   <tr><td>순부채상환력</td><td>✅</td><td>net_debt / ebitda TTM</td></tr>
   <tr><td>Total Debt</td><td>✅</td><td>financials.total_debt</td></tr>
-  <tr><td>Cash on hand</td><td>🚧</td><td>financials.cash_on_hand (KR 미수집)</td></tr>
+  <tr><td>Cash on hand</td><td>✅</td><td>financials.cash_on_hand — KR: DART "현금및현금성자산"+"현금및예치금"(금융주), US: FMP balance-sheet. active+최신기 NULL=0 (2026-04-25)</td></tr>
   <tr><td>Current Ratio</td><td>✅</td><td>current_assets / current_liabilities</td></tr>
   <tr><td rowspan="2">배당</td><td>배당수익률</td><td>✅</td><td>dividends_paid TTM / 시총</td></tr>
   <tr><td>배당성장률</td><td>✅</td><td>YoY dividends_paid 비교</td></tr>
@@ -511,7 +511,7 @@ Plan B — precomputed JSON (nginx 정적 서빙)
   <tr><th>우선순위</th><th>항목</th><th>현황</th><th>해결 방향</th></tr>
   <tr><td><strong>P1</strong></td><td>SQLite 동시성</td><td>크론 중 수동 작업 충돌 가능</td><td>WAL 모드 즉시 적용 / PostgreSQL 장기 이전</td></tr>
   <tr><td><strong>P1</strong></td><td>DB 자동 백업</td><td>수동 cp만 존재</td><td>cron rsync 또는 S3 업로드</td></tr>
-  <tr><td><strong>P1</strong></td><td>KR Cash on hand</td><td>DART API 미구현</td><td>collectors/kr/financial.py 확장</td></tr>
+  <tr><td>✅</td><td>KR Cash on hand</td><td><strong>완료</strong> — active+최신기 NULL=0 (2026-04-25)</td><td>금융주 "현금및예치금" 키워드 추가. 10종목 DART 교차검증 오차 0%</td></tr>
   <tr><td><strong>P1</strong></td><td>모니터링</td><td>이메일 알림만</td><td>UptimeRobot 또는 Grafana</td></tr>
   <tr><td><strong>P2</strong></td><td>US 종목 확장</td><td>2,445 → 3,000+ 목표</td><td>FMP $150M+ 소형주 추가</td></tr>
   <tr><td><strong>P2</strong></td><td>즐겨찾기 페이지</td><td>버튼만 존재</td><td>/favorites 전용 페이지</td></tr>
