@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>StockDigging — 재반박 검토 및 대응</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.8; display: flex; }
+
+  /* 사이드바 */
+  .sidebar {
+    width: 260px; min-height: 100vh; background: #fff; border-right: 1px solid #e2e8f0;
+    padding: 24px 16px; position: fixed; top: 0; left: 0; overflow-y: auto; z-index: 10;
+  }
+  .sidebar-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #3b82f6; }
+  .sidebar-title a { color: inherit; text-decoration: none; }
+  .nav-category { font-size: 0.8rem; font-weight: 700; color: #3b82f6; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .nav-category .arrow { font-size: 0.6rem; transition: transform 0.2s; }
+  .nav-category.collapsed .arrow { transform: rotate(-90deg); }
+  .nav-list { list-style: none; padding: 0; }
+  .nav-list.collapsed { display: none; }
+  .nav-item a { display: block; padding: 6px 12px; font-size: 0.9rem; color: #475569; text-decoration: none; border-radius: 6px; transition: all 0.15s; }
+  .nav-item a:hover { background: #e2e8f0; color: #1e293b; }
+  .nav-item a.active { background: #dbeafe; color: #1e40af; font-weight: 500; }
+  .sidebar-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; }
+  .sidebar-footer a { color: #64748b; text-decoration: none; }
+
+  .page-body { margin-left: 260px; flex: 1; min-width: 0; }
+  .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+  @media (max-width: 768px) { .sidebar { display: none; } .page-body { margin-left: 0; } }
+
+  /* 헤더 */
+  .hero { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 48px 24px; text-align: center; margin-bottom: 40px; }
+  .hero h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 8px; }
+  .hero p { color: #94a3b8; font-size: 1rem; }
+  .hero .divider { width: 50px; height: 2px; background: #3b82f6; margin: 20px auto; }
+  .hero .meta { font-size: 0.8rem; color: #64748b; margin-top: 16px; }
+
+  /* 챕터 */
+  h2.chapter { font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-top: 48px; margin-bottom: 8px;
+    padding-bottom: 8px; border-bottom: 3px solid #3b82f6; }
+  h3.section { font-size: 1.15rem; font-weight: 700; color: #1e40af; margin: 32px 0 12px; }
+
+  p { margin-bottom: 12px; }
+  strong { font-weight: 700; }
+
+  /* 박스 */
+  .box { padding: 16px 20px; border-radius: 8px; margin: 16px 0; border-left: 4px solid; font-size: 0.95rem; }
+  .box-accept { background: #fef2f2; border-color: #dc2626; color: #991b1b; }
+  .box-rebut { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+  .box-partial { background: #fffbeb; border-color: #d97706; color: #92400e; }
+  .box-label { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+
+  /* 테이블 */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.9rem; }
+  th { background: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 8px 12px; border: 1px solid #e2e8f0; }
+  td { padding: 8px 12px; border: 1px solid #e2e8f0; }
+  tr:nth-child(even) td { background: #f8fafc; }
+
+  ul { margin: 8px 0 16px 20px; }
+  li { margin-bottom: 6px; }
+  code { font-family: 'Consolas', monospace; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: #e11d48; }
+
+  .footer { text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar"></nav>
+
+<div class="page-body">
+<div class="hero">
+  <h1>재반박 검토 및 대응</h1>
+  <p>외부 분석 문서 2차 대응</p>
+  <div class="divider"></div>
+  <div class="meta">2026-03-27 &nbsp;|&nbsp; "StockDigging 사업화 분석" 재반박에 대한 항목별 검토</div>
+</div>
+
+<div class="container">
+
+<!-- ═══════ 1. 경과 ═══════ -->
+<h2 class="chapter">1. 경과</h2>
+
+<table>
+<thead><tr><th>단계</th><th>문서</th><th>핵심</th></tr></thead>
+<tbody>
+<tr><td>1차 비판</td><td>"StockDigging 사업화의 현실"</td><td>로보어드바이저 분류, 1년차 13~16억, 투자일임업 5억 요구</td></tr>
+<tr><td>1차 대응</td><td><a href="/docs/stockdigging/rebuttal.html">외부 비판 검토 및 대응</a></td><td>카테고리 오류 지적 + 3건 수용 + 4건 반박</td></tr>
+<tr><td>2차 비판</td><td>"StockDigging 사업화 분석" (재반박)</td><td>4건 오류 인정, 7가지 근본 문제 주장</td></tr>
+<tr><td><strong>본 문서</strong></td><td>재반박 검토 및 대응</td><td>3건 수용 + 3건 반박 + 1건 부분 수용</td></tr>
+</tbody>
+</table>
+
+
+<!-- ═══════ 2. 상대방이 수정한 부분 ═══════ -->
+<h2 class="chapter">2. 상대방이 수정한 부분</h2>
+
+<p>1차 대응의 효과로 상대 문서가 <strong>4가지 핵심 오류를 인정</strong>했다. 초기 비판의 프레임 자체가 무너진 셈이다.</p>
+
+<table>
+<thead><tr><th>항목</th><th>1차 비판</th><th>2차 비판 (수정)</th></tr></thead>
+<tbody>
+<tr><td>서비스 분류</td><td>로보어드바이저</td><td><strong>스크리닝 도구</strong>로 재분류</td></tr>
+<tr><td>규제 요건</td><td>투자일임업 (자기자본 5억)</td><td><strong>유사투자자문업 신고</strong> (수백만원)</td></tr>
+<tr><td>1년차 비용</td><td>13~16억원</td><td><strong>과다산정 인정</strong></td></tr>
+<tr><td>Exit 모델</td><td>"트래픽 매각은 환상"</td><td>ARR 기반 SaaS 멀티플 <strong>수용</strong></td></tr>
+</tbody>
+</table>
+
+
+<!-- ═══════ 3. 상대방이 유지하는 비판 ═══════ -->
+<h2 class="chapter">3. 상대방이 유지하는 비판 7가지</h2>
+
+<table>
+<thead><tr><th>#</th><th>비판</th><th>본 문서 판단</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>법적 토대 부재 (사업자 정보, 신고)</td><td class="box-accept" style="border:none;background:#fef2f2;color:#991b1b;font-weight:700">수용</td></tr>
+<tr><td>2</td><td>데이터 투명성 부재</td><td class="box-accept" style="border:none;background:#fef2f2;color:#991b1b;font-weight:700">수용</td></tr>
+<tr><td>3</td><td>면책조항 부족</td><td class="box-accept" style="border:none;background:#fef2f2;color:#991b1b;font-weight:700">수용</td></tr>
+<tr><td>4</td><td>분석 깊이 무료 도구 미달</td><td class="box-partial" style="border:none;background:#fffbeb;color:#92400e;font-weight:700">부분 수용</td></tr>
+<tr><td>5</td><td>교과서 지표 조합 수준의 기술력</td><td class="box-rebut" style="border:none;background:#f0fdf4;color:#15803d;font-weight:700">반박</td></tr>
+<tr><td>6</td><td>독자적 데이터 자산 없음</td><td class="box-rebut" style="border:none;background:#f0fdf4;color:#15803d;font-weight:700">반박</td></tr>
+<tr><td>7</td><td>프로덕션 인프라 부재 (바이브코딩 한계)</td><td class="box-rebut" style="border:none;background:#f0fdf4;color:#15803d;font-weight:700">반박</td></tr>
+</tbody>
+</table>
+
+
+<!-- ═══════ 4. 수용 ═══════ -->
+<h2 class="chapter">4. 수용하는 비판</h2>
+
+<h3 class="section">4-1. 법적 토대 부재</h3>
+<div class="box box-accept">
+  <div class="box-label">수용</div>
+  사업자 정보 미공개, 유사투자자문업 미신고는 사실이다. 변명의 여지 없이 가장 먼저 정비해야 할 항목이다.
+</div>
+<p><strong>대응 계획:</strong></p>
+<ul>
+  <li>사이트 footer에 상호, 대표자, 사업자등록번호, 소재지, 연락처 공개</li>
+  <li>유사투자자문업 신고 진행 (자본금 500만원 수준)</li>
+  <li>이용약관 / 개인정보처리방침 페이지 작성</li>
+</ul>
+
+<h3 class="section">4-2. 데이터 투명성 부재</h3>
+<div class="box box-accept">
+  <div class="box-label">수용</div>
+  DART, NAVER Finance, FMP 등 공식 소스를 사용하지만 사이트에 명시하지 않은 건 사실이다.
+</div>
+<p><strong>대응 계획:</strong></p>
+<ul>
+  <li>데이터 출처 명시 페이지 작성 (소스별 수집 항목, 갱신 주기)</li>
+  <li>생존편향 통제 방법 (<code>is_active</code> 플래그) 고지</li>
+  <li>백테스트 한계 (종가 기반, 슬리피지 미반영) 명시</li>
+</ul>
+
+<h3 class="section">4-3. 면책조항 부족</h3>
+<div class="box box-accept">
+  <div class="box-label">수용</div>
+  현재 2문장 수준의 면책조항은 업계 기준에 미달한다.
+</div>
+<p><strong>대응 계획:</strong></p>
+<ul>
+  <li>별도 면책조항 페이지 작성 (투자 위험 고지, 과거 성과 ≠ 미래 수익)</li>
+  <li>Simply Wall St 수준의 상세 고지 참고</li>
+</ul>
+
+
+<!-- ═══════ 5. 반박 ═══════ -->
+<h2 class="chapter">5. 반박하는 비판</h2>
+
+<h3 class="section">5-1. "교과서 지표 조합, 파이썬 입문자도 주말에 가능"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 정보 부족에 기반한 과소평가</div>
+  상대는 PER/PBR/RSI/MACD 나열만 보고 판단했다. 실제 시스템은 교과서 지표 나열과 근본적으로 다른 수준이다.
+</div>
+
+<p>상대가 본 것: 지표 이름 목록 (PER, PBR, ROE, RSI, MACD)</p>
+<p><strong>실제 시스템:</strong></p>
+<ul>
+  <li><strong>30개 지표 x 6스타일</strong> 매트릭스 — 지표별 커브 차별 적용 (sqrt, pow2, piecewise, zone, linear)</li>
+  <li><strong>KR/US 시장별 독립 캘리브레이션</strong> — p1=0점, p99=만점, 월간 자동 갱신</li>
+  <li><strong>중복 제거 실증 검증</strong> — 상관계수(r) 기반 교차 검증. 베타 기각(r=0.49) → 매출 안정성으로 교체(r=0.07)</li>
+  <li><strong>49,590회 시뮬레이션</strong>으로 최적 파라미터 도출 (lookback, SMA 주기, 방어전략, 블렌딩 비율)</li>
+  <li><strong>ATR 기반 동적 가격 목표</strong> — 전략별, 종목별 변동성에 따라 개별 적용</li>
+  <li><strong>스코어링 v2 설계</strong> — 5인 전문가 위원회 구성, 신규 6개 지표, 방식 변경 3개, 수식 변경 2개</li>
+</ul>
+
+<p>"PER로 정렬한다"와 "30개 지표를 시장별 백분위로 캘리브레이션하고 상관관계를 검증하여 커브를 설계한다"는 완전히 다른 수준이다. 상대는 설계서를 본 적이 없으므로 이 비판은 정보 부족에서 비롯된 것이다.</p>
+
+<table>
+<thead><tr><th>상대 주장</th><th>실제</th></tr></thead>
+<tbody>
+<tr><td>"네이버 금융 수준"</td><td>네이버 금융에 6전략 가중 스코어링, 투자성향 매칭, ATR 동적 목표가 없음</td></tr>
+<tr><td>"교과서 1단계"</td><td>캘리브레이션 + 상관관계 검증 + 시뮬레이션 최적화 = 팩터 모델 2~3단계 수준</td></tr>
+<tr><td>"주말에 가능"</td><td>스코어링 엔진 단독 1,907줄, 49,590회 시뮬레이션, 6단계 연구 파이프라인</td></tr>
+</tbody>
+</table>
+
+
+<h3 class="section">5-2. "독자적 데이터 자산 없음"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 독자 자산의 정의를 좁게 적용</div>
+  상대가 인정하는 독자 자산 예시(Simply Wall St의 DCF, TipRanks의 애널리스트 적중률)와 동일한 논리로 StockDigging도 독자 자산을 보유한다.
+</div>
+
+<table>
+<thead><tr><th>서비스</th><th>독자 자산</th></tr></thead>
+<tbody>
+<tr><td>Simply Wall St</td><td>Snowflake 차트, DCF 기반 자체 밸류에이션</td></tr>
+<tr><td>TipRanks</td><td>애널리스트 적중률 추적 데이터</td></tr>
+<tr><td><strong>StockDigging</strong></td><td><strong>6전략 30지표 스코어링 엔진</strong> + <strong>투자성향 진단 → 전략 매칭</strong> + <strong>적응형 벤치마크 실험 데이터</strong> (301봇 x 3대회 x 95코호트 x 174실험)</td></tr>
+</tbody>
+</table>
+
+<p>Simply Wall St가 "Snowflake 차트"를 독자 자산이라 부르는 것과 동일한 논리로, <strong>6전략 스코어링 + 성향 매칭 파이프라인</strong>은 충분히 독자 자산이다. 다만 이를 외부에 충분히 설명하지 않은 점은 인정하며, 스코어링 방법론 개괄 공개로 대응한다.</p>
+
+
+<h3 class="section">5-3. "바이브코딩 = 프로덕션 불가"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 현재 시스템 실태와 불일치</div>
+  상대가 나열한 "바이브코딩으로 불가능한 것"은 이미 구현되어 운영 중이다.
+</div>
+
+<table>
+<thead><tr><th>상대 주장 "불가능"</th><th>현재 StockDigging</th></tr></thead>
+<tbody>
+<tr><td>실시간 데이터 파이프라인</td><td>크론 6단계 자동 수집 — KR 매일(월~토), US 매일(월~금)</td></tr>
+<tr><td>데이터 정합성</td><td>PER/PBR sanitize (<0.5 or >1000 제거), 생존편향 <code>is_active</code> 관리</td></tr>
+<tr><td>모니터링/알림</td><td>배치 로그 + 이메일 알림 시스템</td></tr>
+<tr><td>보안</td><td><code>.env</code> 분리, 비밀번호 해시, SQL parameterized query</td></tr>
+<tr><td>백업/복구</td><td>DB 백업 크론, gz 압축 보관</td></tr>
+<tr><td>스케일링</td><td>nginx 리버스 프록시 + 캐시 워밍업 (KR ~202초 + US ~120초)</td></tr>
+</tbody>
+</table>
+
+<p>규모 지표:</p>
+<ul>
+  <li><strong>109개</strong> API 엔드포인트</li>
+  <li><strong>KR 2,663개 + US 6,716개</strong> 종목 커버</li>
+  <li><strong>2,600+</strong> 기술적 지표 레코드</li>
+  <li><strong>10,700회+</strong> 시뮬레이션 수행</li>
+  <li>분기별 자동 재무제표 수집 (DART API, FMP API)</li>
+</ul>
+
+<p>완벽하지는 않다. CI/CD 파이프라인, 로드밸런싱 등은 아직 없다. 그러나 "프로토타입"이라 치부할 수준도 아니다. <strong>라이브 서비스가 매일 자동으로 데이터를 수집·갱신하며 운영되고 있다.</strong></p>
+
+
+<!-- ═══════ 6. 부분 수용 ═══════ -->
+<h2 class="chapter">6. 부분 수용하는 비판</h2>
+
+<h3 class="section">6-1. "분석 깊이 무료 도구 미달"</h3>
+<div class="box box-partial">
+  <div class="box-label">부분 수용</div>
+  MDD, 샤프비율, 벤치마크 비교가 시뮬레이션에 없는 것은 맞다. 그러나 "무료 도구 미달"은 과도한 표현이다.
+</div>
+
+<p><strong>수용</strong>: 시뮬레이션 결과에 리스크 지표(MDD, 샤프비율, 변동성, 벤치마크 비교)가 필요하다. 이미 1차 대응에서 수용했으며, 데이터는 계산 완료 상태로 표시 기능만 추가하면 된다.</p>
+
+<p><strong>반박</strong>: "무료 도구 미달"이라는 표현은 과도하다.</p>
+<ul>
+  <li>네이버 금융에 6전략 가중 스코어링이 없다</li>
+  <li>무료 도구에 투자성향 진단 → 전략 매칭 파이프라인이 없다</li>
+  <li>무료 도구에 나만의 전략(30개 지표 가중치 커스텀)이 없다</li>
+</ul>
+
+<p>리스크 지표 부재는 사실이지만, 서비스 전체가 무료 도구에 미달한다는 결론은 논리적 비약이다.</p>
+
+
+<!-- ═══════ 7. 향후 방향 ═══════ -->
+<h2 class="chapter">7. 향후 방향</h2>
+
+<h3 class="section">7-1. 즉시 (1주 내)</h3>
+<table>
+<thead><tr><th>과제</th><th>대응하는 비판</th><th>소요</th></tr></thead>
+<tbody>
+<tr><td>사업자 정보 공개 (footer)</td><td>법적 토대 부재</td><td>1일</td></tr>
+<tr><td>면책조항 별도 페이지</td><td>면책조항 부족</td><td>1~2일</td></tr>
+<tr><td>데이터 출처 명시 페이지</td><td>데이터 투명성 부재</td><td>1~2일</td></tr>
+</tbody>
+</table>
+
+<h3 class="section">7-2. 단기 (1개월)</h3>
+<table>
+<thead><tr><th>과제</th><th>대응하는 비판</th><th>소요</th></tr></thead>
+<tbody>
+<tr><td>유사투자자문업 신고</td><td>법적 토대 부재</td><td>2~4주</td></tr>
+<tr><td>시뮬레이션 리스크 지표 추가</td><td>분석 깊이 부족</td><td>1~2주</td></tr>
+<tr><td>스코어링 방법론 개괄 공개</td><td>교과서 지표 비판 원천 차단</td><td>1주</td></tr>
+</tbody>
+</table>
+
+<h3 class="section">7-3. 중기 (3개월)</h3>
+<table>
+<thead><tr><th>과제</th><th>효과</th><th>소요</th></tr></thead>
+<tbody>
+<tr><td>스코어링 v2 구현 배포</td><td>중복 제거 + 신규 6지표로 실질적 차별화</td><td>2~3주</td></tr>
+<tr><td>PMF 검증</td><td>사용자 기반 미확인 비판 해소</td><td>지속</td></tr>
+</tbody>
+</table>
+
+
+<!-- ═══════ 8. 결론 ═══════ -->
+<h2 class="chapter">8. 결론</h2>
+
+<p>1차 대응으로 상대 비판의 <strong>근본 프레임(로보어드바이저 분류, 13~16억 비용, 투자일임업 5억)</strong>을 무너뜨렸다. 상대도 이를 인정하고 수정했다.</p>
+
+<p>2차 비판에서 유지하는 7가지 중:</p>
+<ul>
+  <li><strong>3건 수용</strong> — 법적 토대, 데이터 투명성, 면책조항. 모두 즉시~단기 해결 가능.</li>
+  <li><strong>3건 반박</strong> — 기술력 과소평가, 독자 자산 부인, 프로덕션 부정. 모두 정보 부족에서 비롯된 비판.</li>
+  <li><strong>1건 부분 수용</strong> — 리스크 지표 부재는 맞지만, 서비스 전체가 무료 도구 미달이라는 결론은 과도.</li>
+</ul>
+
+<p><strong>핵심 교훈:</strong> 수용할 비판(법적 토대 3종)을 빠르게 해결하면, 반박 가능한 비판은 자연히 설득력을 잃는다. 법적 토대가 없으면 기술력을 아무리 증명해도 "기본도 안 된 서비스"라는 프레임에서 벗어나기 어렵다.</p>
+
+<p><strong>다음 단계의 우선순위:</strong> 사업자 정보 공개 → 면책조항 → 유사투자자문업 신고 → 리스크 지표 추가 → 스코어링 방법론 공개</p>
+
+<div class="footer">
+  StockDigging &nbsp;|&nbsp; 재반박 검토 및 대응 &nbsp;|&nbsp; 2026-03-27 &nbsp;|&nbsp; 내부 문서
+</div>
+
+</div><!-- container -->
+</div><!-- page-body -->
+
+<script src="/nav.js"></script>
+</body>
+</html>

@@ -4,13 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>StockDigging — 운영 플레이북</title>
+<title>StockDigging v2 — 운영 플레이북</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Noto Sans KR', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.8; display: flex; }
 
-  /* 사이드바 */
   .sidebar {
     width: 260px; min-height: 100vh; background: #fff; border-right: 1px solid #e2e8f0;
     padding: 24px 16px; position: fixed; top: 0; left: 0; overflow-y: auto; z-index: 10;
@@ -32,14 +31,13 @@
   .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
   @media (max-width: 768px) { .sidebar { display: none; } .page-body { margin-left: 0; } }
 
-  /* 헤더 */
   .hero { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 48px 24px; text-align: center; margin-bottom: 40px; }
   .hero h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 8px; }
   .hero p { color: #94a3b8; font-size: 1rem; }
   .hero .divider { width: 50px; height: 2px; background: #3b82f6; margin: 20px auto; }
   .hero .meta { font-size: 0.8rem; color: #64748b; margin-top: 16px; }
+  .badge { display: inline-block; background: #3b82f6; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
 
-  /* 챕터 */
   h2.chapter { font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-top: 48px; margin-bottom: 8px;
     padding-bottom: 8px; border-bottom: 3px solid #3b82f6; }
   h3.section { font-size: 1.15rem; font-weight: 700; color: #1e40af; margin: 32px 0 12px; }
@@ -47,15 +45,13 @@
   p { margin-bottom: 12px; }
   strong { font-weight: 700; }
 
-  /* 박스 */
   .box { padding: 16px 20px; border-radius: 8px; margin: 16px 0; border-left: 4px solid; font-size: 0.95rem; }
-  .box-accept { background: #fef2f2; border-color: #dc2626; color: #991b1b; }
-  .box-rebut { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
-  .box-partial { background: #fffbeb; border-color: #d97706; color: #92400e; }
+  .box-danger { background: #fef2f2; border-color: #dc2626; color: #991b1b; }
+  .box-success { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+  .box-warn { background: #fffbeb; border-color: #d97706; color: #92400e; }
   .box-info { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
   .box-label { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
 
-  /* 테이블 */
   table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.9rem; }
   th { background: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 8px 12px; border: 1px solid #e2e8f0; }
   td { padding: 8px 12px; border: 1px solid #e2e8f0; }
@@ -64,18 +60,15 @@
   ul, ol { margin: 8px 0 16px 20px; }
   li { margin-bottom: 6px; }
 
-  /* 코드 블록 */
   pre { background: #1e293b; color: #e2e8f0; padding: 16px 20px; border-radius: 8px; margin: 12px 0 20px;
     overflow-x: auto; font-size: 0.85rem; line-height: 1.6; font-family: 'Consolas', 'Monaco', monospace; }
   code { font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; }
   p code, li code, td code { background: #e2e8f0; color: #334155; padding: 2px 6px; border-radius: 4px; }
 
-  /* 체크리스트 */
   .checklist { list-style: none; margin-left: 0; padding-left: 0; }
   .checklist li { padding: 4px 0 4px 28px; position: relative; }
   .checklist li::before { content: "\2610"; position: absolute; left: 4px; font-size: 1.1em; color: #64748b; }
 
-  /* ASCII 다이어그램 */
   .ascii-diagram { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;
     margin: 16px 0 24px; overflow-x: auto; font-family: 'Consolas', 'Monaco', monospace;
     font-size: 0.82rem; line-height: 1.5; white-space: pre; color: #334155; }
@@ -89,10 +82,10 @@
 
 <div class="page-body">
 <div class="hero">
-  <h1>StockDigging</h1>
+  <h1>StockDigging v2 <span class="badge">v2</span></h1>
   <p>운영 플레이북</p>
   <div class="divider"></div>
-  <div class="meta">2026-03-27 기준 &nbsp;|&nbsp; 실전 운영 가이드</div>
+  <div class="meta">2026-04-25 기준 &nbsp;|&nbsp; Next.js 16 + FastAPI + SQLite</div>
 </div>
 
 <div class="container">
@@ -101,154 +94,165 @@
 <!-- 1. 시스템 전체 구조 -->
 <!-- ============================================================ -->
 <h2 class="chapter">1. 시스템 전체 구조</h2>
-<p>StockDigging 전체 데이터 흐름을 한눈에 파악할 수 있는 구조도이다. 모든 데이터는 왼쪽에서 오른쪽으로 흐른다.</p>
+<p>StockDigging v2는 v1의 단일 파이썬 서버에서 Next.js 프론트엔드 + FastAPI 백엔드 분리 구조로 전면 재설계되었다.</p>
 
-<div class="ascii-diagram">[데이터 소스]                    [서버: 158.247.235.58]              [사용자]
-                                /var/www/stockdigging/
+<div class="ascii-diagram">[데이터 소스]                  [서버: 158.247.235.58 /var/www/stockdigging/]
 
-DART API ──&gt; collectors/ ──&gt; stockpulse.db ──&gt; scoring.py ──&gt; score_cache.pkl ──&gt; API ──&gt; 프론트엔드
-pykrx   ──&gt; (KR 가격)         (2.1GB)         (1,907줄)      (17MB)            (109개)
-FMP ────&gt; (US 가격+밸류에이션)
-FMP ────&gt; (US 재무)
+DART API  ──&gt; collectors/kr/   ─┐
+pykrx     ──&gt; (KR 가격·밸류에이션) ├──&gt; stockdigging.db (SQLite, ~2.5GB)
+FMP       ──&gt; collectors/us/   ─┘      ↓
+yfinance  ──&gt; (US 가격)               FastAPI (uvicorn :8000) ──&gt; /api/rankings
+                                       ↓ precompute_rankings.py
+                               data/rankings/{market}_{sort}.json  (정적 캐시)
+                               data/stats_cache.json               (필터 슬라이더용)
 
-[크론 자동화]
-16:00 KST 매일(월~토) ──&gt; auto_daily.sh     (KR: 가격 &gt; 기술 &gt; 밸류에이션 &gt; 실전검증 &gt; 캐시)
-06:00 KST 매일(월~금) ──&gt; auto_daily_us.sh   (US: FMP가격 &gt; 기술 &gt; FMP밸류 &gt; 실전검증 &gt; 캐시)
-매월 1일 00:00 UTC ────&gt; auto_monthly.sh (종목목록 &gt; 캘리브레이션)
-분기 (8회/년) ─────────&gt; auto_quarterly.sh (재무제표 &gt; 캘리브레이션)
+[nginx :443]
+  /                  ──&gt; proxy :3000  (Next.js)
+  /api/auth/         ──&gt; proxy :3000  (Next.js API)
+  /api/favorites     ──&gt; proxy :3000  (Next.js API)
+  /api/og            ──&gt; proxy :3000  (Next.js API)
+  /api/              ──&gt; proxy :8000  (FastAPI)
+  /data/             ──&gt; alias /var/www/stockdigging/data/ (정적 서빙)
 
-[nginx]
-:443 (HTTPS) ──&gt; proxy_pass :8000 ──&gt; uvicorn (quick_server.py)
-                  유지보수 시 return 503 전환</div>
+[크론 자동화] (UTC 기준)
+KR 마감 06:30 UTC (no DST)
+  06:40  run_daily --market KR          # main (마감 10분 후)
+  07:30  run_daily --market KR          # gap fill (항상)
+  08:30  run_daily --market KR --only-if-failed
+  09:30  run_daily --market KR --only-if-failed
+
+US 마감 20:00 UTC (EDT) / 21:00 UTC (EST) — _minutes_since_close() 자동 DST 처리
+  20:10  run_daily --market US          # main (EDT: 10분 후 / EST: 자동 스킵)
+  21:10  run_daily --market US          # gap fill (EDT: 1h후 / EST: main)
+  22:00  run_daily --market US --only-if-failed
+  23:00  run_daily --market US --only-if-failed
+
+*/5 * * * *  curl -s http://127.0.0.1:8000/api/indices &gt; /dev/null  # 인덱스 캐시 워밍</div>
 
 <div class="box box-info">
-  <div class="box-label">핵심 포인트</div>
-  scoring.py가 DB 데이터를 읽어 score_cache.pkl을 생성하고, API가 이 캐시를 서빙한다. 배치 완료 후 <code>/api/cache/refresh</code>를 호출하여 서버 재시작 없이 캐시를 자동 갱신한다.
-</div>
-
-
-<!-- ============================================================ -->
-<!-- 2. 매일 확인사항 -->
-<!-- ============================================================ -->
-<h2 class="chapter">2. 매일 확인사항</h2>
-<p>매일 아침(한국 시간 09:00 이후) <strong>관리자 페이지</strong>에서 서버 상태를 확인한다.</p>
-
-<h3 class="section">2-1. 관리자 대시보드 (권장)</h3>
-<p><a href="https://stockdigging.com/admin.html" target="_blank">stockdigging.com/admin.html</a> → <strong>📡 서버 상태</strong> 탭에서 한눈에 확인:</p>
-<ul>
-  <li><strong>데이터 최신성</strong>: KR/US 가격 및 밸류에이션 날짜 — 오늘 날짜면 ✅, 아니면 ⚠️</li>
-  <li><strong>캐시 상태</strong>: 캐시 갱신 시각, 조합 수, 파일 크기</li>
-  <li><strong>디스크</strong>: 사용률 70% 미만이면 ✅</li>
-  <li><strong>캐시 갱신 버튼</strong>: 데이터는 최신인데 캐시만 오래된 경우 클릭 (서버 재시작 불필요)</li>
-</ul>
-
-<div class="box box-rebut">
-  <div class="box-label">크론 실행 시각</div>
+  <div class="box-label">v1 vs v2 핵심 차이</div>
   <ul style="margin-bottom:0">
-    <li><strong>KR</strong>: 16:00 KST (07:00 UTC) 월~토 — 장 마감 30분 후</li>
-    <li><strong>US</strong>: 06:00 KST (21:00 UTC) 월~금 — US 장 마감 1시간 후</li>
+    <li><strong>v1</strong>: 단일 FastAPI + score_cache.pkl (P1 피팅/캘리브레이션 + 투자성향/대회 기능)</li>
+    <li><strong>v2</strong>: Next.js 16 + FastAPI 분리, raw 지표 24개, precomputed JSON, Supabase Auth</li>
+    <li>v2 DB 경로: <code>/var/www/stockdigging/db/stockdigging.db</code> (v1: stockpulse.db)</li>
   </ul>
 </div>
 
-<h3 class="section">2-2. SSH 확인 (대시보드 접속 불가 시)</h3>
-<pre># KR 일일 배치 로그
-tail -20 /var/www/stockdigging/logs/batch_daily.log
 
-# US 일일 배치 로그
-tail -20 /var/www/stockdigging/logs/batch_daily_us.log
+<!-- ============================================================ -->
+<!-- 2. 배포 절차 (deploy.py) -->
+<!-- ============================================================ -->
+<h2 class="chapter">2. 배포 절차 (deploy.py)</h2>
+<p>코드 변경 후 배포는 로컬에서 <code>python deploy.py</code> 한 번으로 완료된다. GitHub Actions는 사용하지 않는다.</p>
 
-# 정상 완료 시 마지막 줄:  "일일 배치 완료"
-# 캐시 파일 날짜 확인:
-ls -la /var/www/stockdigging/data/score_cache.pkl
+<div class="box box-danger">
+  <div class="box-label">배포 전 필수 확인</div>
+  <ul style="margin-bottom:0">
+    <li><strong>git push 완료 확인</strong>: push 없이 deploy하면 서버는 구 버전을 배포함</li>
+    <li><strong>마이그레이션 파일 확인</strong>: <code>backend/migrations/</code>에 새 파일이 있으면 <code>add_*.py</code>(스키마)만 자동 실행됨. <code>patch_*.py</code>는 절대 포함하지 말 것 — 수십 분짜리 작업이 배포 중 서버를 다운시킴</li>
+    <li><strong>무거운 백그라운드 프로세스 확인</strong>: <code>pgrep -fa precompute</code> 로 실행 중인 작업 여부 확인</li>
+  </ul>
+</div>
 
-# DB 최신 데이터 확인:
-cd /var/www/stockdigging
-.venv/bin/python3 -c "
-import sqlite3
-c = sqlite3.connect('db/stockpulse.db')
-print('최신 가격:', c.execute('SELECT MAX(date) FROM daily_prices').fetchone()[0])
-print('최신 밸류:', c.execute('SELECT MAX(date) FROM valuations').fetchone()[0])
-"</pre>
-<p>에러가 있으면 <strong>7장 트러블슈팅</strong>을 참고한다.</p>
+<h3 class="section">2-1. 배포 흐름 (Zero-downtime Atomic Swap)</h3>
+<ol>
+  <li>git pull + preflight 체크 (RAM / 디스크)</li>
+  <li>backend 서비스만 stop (RAM 확보), frontend는 기존 <code>.next</code>로 계속 서빙</li>
+  <li><code>.next</code> → <code>.next.old</code> 백업 후 새 빌드 시작</li>
+  <li>빌드 실패 → <code>.next.old</code> 자동 복원, 다운타임 0</li>
+  <li>성공 시 services restart + HTTP 헬스체크</li>
+  <li>헬스체크 실패 → <code>.next.old</code> 자동 롤백</li>
+  <li>성공 시 <code>.next.old</code> 삭제, "✅ Deploy complete" 출력</li>
+</ol>
 
-<h3 class="section">2-3. 사이트 정상 확인</h3>
-<ul>
-  <li><a href="https://stockdigging.com" target="_blank">stockdigging.com</a> 접속하여 TOP100 페이지 로딩 확인</li>
-  <li>종목 상세 페이지에서 당일 가격이 표시되는지 확인</li>
+<h3 class="section">2-2. 배포 후 확인</h3>
+<ul class="checklist">
+  <li><a href="https://stockdigging.com" target="_blank">stockdigging.com</a> 접속 — 랭킹 테이블 로딩 확인</li>
+  <li>종목 상세 페이지 (<code>/stock/005930</code> 등) — 오늘 가격 표시 확인</li>
+  <li>변경된 기능 직접 테스트 (TypeScript 컴파일 성공 ≠ 런타임 정상)</li>
+  <li>curl 헬스체크: <code>curl http://127.0.0.1:8000/api/health</code> → 200 확인</li>
 </ul>
 
+<div class="box box-warn">
+  <div class="box-label">주의: "됐다고 하지 말고 실제로 확인"</div>
+  <ul style="margin-bottom:0">
+    <li>백엔드 API 200 응답 ≠ 프론트 정상</li>
+    <li><code>curl http://127.0.0.1:8000/</code> 로컬 테스트 ≠ nginx 통과 테스트</li>
+    <li>배포 스크립트 "✅ Deploy complete" ≠ 기능 작동 — 반드시 브라우저에서 직접 확인</li>
+  </ul>
+</div>
+
 
 <!-- ============================================================ -->
-<!-- 3. 크론 스케줄 전체 -->
+<!-- 3. 일일 배치 (run_daily.py) -->
 <!-- ============================================================ -->
-<h2 class="chapter">3. 크론 스케줄 전체</h2>
+<h2 class="chapter">3. 일일 배치 상세 (run_daily.py)</h2>
+<p>크론이 호출하는 메인 배치 스크립트. 시장별로 데이터 수집 → precompute → IndexNow 핑 → 메일 알림 순서로 실행된다.</p>
 
+<h3 class="section">3-1. KR 배치 단계</h3>
 <table>
-  <tr><th>시간 (UTC)</th><th>주기</th><th>스크립트</th><th>로그 파일</th><th>설명</th></tr>
-  <tr><td>07:00 (16:00 KST)</td><td>매일 월~토</td><td>auto_daily.sh</td><td>logs/batch_daily.log</td><td>KR: 가격, 기술적, 밸류에이션, 실전검증, 캐시갱신</td></tr>
-  <tr><td>21:00 (06:00 KST)</td><td>매일 월~금</td><td>auto_daily_us.sh</td><td>logs/batch_daily_us.log</td><td>US: FMP 가격, 기술적, FMP 밸류에이션, 실전검증, 캐시갱신</td></tr>
-  <tr><td>00:00</td><td>매월 1일</td><td>auto_monthly.sh</td><td>logs/cron_monthly.log</td><td>종목목록 최신화, 캘리브레이션</td></tr>
-  <tr><td>00:00</td><td>4/1, 5/16, 8/15, 11/15</td><td>auto_quarterly.sh</td><td>logs/cron_quarterly.log</td><td>분기 재무제표 1차 수집</td></tr>
-  <tr><td>00:00</td><td>4/7, 5/22, 8/21, 11/21</td><td>auto_quarterly.sh</td><td>logs/cron_quarterly.log</td><td>분기 재무제표 2차 (누락 보완)</td></tr>
+  <tr><th>단계</th><th>함수</th><th>설명</th></tr>
+  <tr><td>1</td><td><code>_collect_kr_price()</code></td><td>pykrx로 KR 종가 + 시총 수집, <code>daily_prices</code> upsert</td></tr>
+  <tr><td>2</td><td><code>_collect_kr_valuation()</code></td><td>DART 재무 + 종가로 PER/PBR/ROE/배당수익률 계산, <code>valuations</code> upsert</td></tr>
+  <tr><td>3</td><td><code>_collect_index_prices()</code></td><td>KOSPI/KOSDAQ/S&amp;P500/NASDAQ/USD-KRW 지수 갱신</td></tr>
+  <tr><td>4</td><td><code>_collect_macro_data()</code></td><td>거시경제 지표 (금리, 환율 등)</td></tr>
+  <tr><td>5</td><td><code>precompute_rankings</code></td><td>KR + ALL 정렬 JSON 재생성 (<code>data/rankings/</code>)</td></tr>
+  <tr><td>6</td><td><code>precompute_stats</code></td><td>필터 슬라이더용 stats_cache.json 재생성</td></tr>
+  <tr><td>7</td><td><code>_ping_indexnow()</code></td><td>Naver·Bing에 갱신 URL 알림 (즉시 색인 요청)</td></tr>
+  <tr><td>8</td><td><code>notify()</code></td><td>성공/실패 이메일 + Discord 발송</td></tr>
+</table>
+
+<h3 class="section">3-2. US 배치 단계</h3>
+<table>
+  <tr><th>단계</th><th>함수</th><th>설명</th></tr>
+  <tr><td>1</td><td><code>_collect_us_price()</code></td><td>yfinance로 US 종가 수집, change_pct 계산 후 upsert</td></tr>
+  <tr><td>2</td><td><code>_collect_index_prices()</code></td><td>지수 갱신 (KR과 동일)</td></tr>
+  <tr><td>3</td><td><code>_collect_macro_data()</code></td><td>거시경제 지표</td></tr>
+  <tr><td>4~7</td><td>precompute, stats, IndexNow, notify</td><td>KR과 동일</td></tr>
 </table>
 
 <div class="box box-info">
-  <div class="box-label">참고</div>
-  분기 크론이 2회씩 실행되는 이유: DART 공시는 마감일(3/31, 5/15, 8/14, 11/14) 직후에 집중 공시되지만, 일부 기업은 며칠 늦게 공시한다. 1차에서 누락된 기업을 2차에서 보완한다.
+  <div class="box-label">gap fill / --only-if-failed 동작 원리</div>
+  <ul style="margin-bottom:0">
+    <li><strong>gap fill (2번째 크론)</strong>: <code>--only-if-failed</code> 없음 → 항상 실행. upsert 멱등성으로 이미 수집된 데이터는 덮어쓰고 누락 종목만 채움</li>
+    <li><strong>retry (3·4번째 크론)</strong>: <code>--only-if-failed</code> → <code>batch_logs</code> 테이블에서 오늘 price 단계 성공 기록이 있으면 스킵</li>
+  </ul>
 </div>
 
-<h3 class="section">크론 등록 확인</h3>
-<pre># 현재 등록된 크론 확인
-crontab -l</pre>
-
-
-<!-- ============================================================ -->
-<!-- 4. auto_daily.sh 상세 -->
-<!-- ============================================================ -->
-<h2 class="chapter">4. auto_daily.sh 상세 (KR 전용, 6단계)</h2>
-<p>매일 크론이 실행하는 KR 일일 배치의 6단계 흐름이다.</p>
+<h3 class="section">3-3. DST 자동 처리 원리</h3>
+<p>US 크론을 고정 시각(20:10 / 21:10 UTC)에 두고, 스크립트 내부 <code>_minutes_since_close()</code>가 <code>exchange_calendars</code>를 통해 실제 마감 시각을 계산한다. 장 마감 전이면(minutes &lt; 0) <code>sys.exit(0)</code>으로 자동 스킵 — 서머타임 수동 전환 불필요.</p>
 
 <table>
-  <tr><th>단계</th><th>작업</th><th>스크립트</th><th>소요 시간</th></tr>
-  <tr><td>1</td><td>KR 가격 수집</td><td>run_batch.py --market KR --step price</td><td>~3분</td></tr>
-  <tr><td>2</td><td>KR 기술적 지표</td><td>run_batch.py --market KR --step technical</td><td>~2분</td></tr>
-  <tr><td>3</td><td>KR 밸류에이션 계산</td><td>calc_kr_valuations.py</td><td>~2분</td></tr>
-  <tr><td>4</td><td>실전검증 스냅샷</td><td>update_competition.py</td><td>~1분</td></tr>
-  <tr><td>5</td><td>사전등록 시뮬레이션</td><td>curl /admin/run-pending-simulations</td><td>~1분</td></tr>
-  <tr><td>6</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
+  <tr><th>계절</th><th>US 마감 (UTC)</th><th>20:10 UTC 크론</th><th>21:10 UTC 크론</th></tr>
+  <tr><td>EDT (3~11월)</td><td>20:00</td><td>마감 10분 후 → 실행 ✅</td><td>마감 1h10m 후 → gap fill ✅</td></tr>
+  <tr><td>EST (11~3월)</td><td>21:00</td><td>장 중 → 자동 스킵 ⏭</td><td>마감 10분 후 → main ✅</td></tr>
 </table>
-
-<div class="box box-rebut">
-  <div class="box-label">중요 변경 (2026-03-26)</div>
-  Naver Finance API / merge 스크립트는 제거되었다. KR 밸류에이션은 <code>calc_kr_valuations.py</code>(DART 재무 + 종가 기반 자체 계산)만 사용한다.
-</div>
-
-<div class="box box-info">
-  <div class="box-label">캐시 정책</div>
-  배치 완료 후 <code>/api/cache/refresh</code>를 호출하여 서버 재시작 없이 캐시를 갱신한다. 캐시를 수동으로 삭제해야 하는 경우는 <strong>스코어링 코드(scoring.py)를 변경했을 때뿐</strong>이다.
-</div>
 
 
 <!-- ============================================================ -->
-<!-- 4-2. auto_daily_us.sh 상세 -->
+<!-- 4. 크론 스케줄 전체 -->
 <!-- ============================================================ -->
-<h2 class="chapter">4-2. auto_daily_us.sh 상세 (US 전용, FMP 기반, 6단계)</h2>
-<p>매일 크론이 실행하는 US 일일 배치의 6단계 흐름이다.</p>
+<h2 class="chapter">4. 크론 스케줄 전체</h2>
 
-<table>
-  <tr><th>단계</th><th>작업</th><th>스크립트</th><th>소요 시간</th></tr>
-  <tr><td>1</td><td>US 가격 수집 (FMP)</td><td>collect_us_prices_fmp.py</td><td>~10분</td></tr>
-  <tr><td>2</td><td>US 기술적 지표</td><td>run_batch.py --market US --step technical</td><td>~2분</td></tr>
-  <tr><td>3</td><td>US 밸류에이션 계산 (FMP + DB TTM)</td><td>calc_us_valuations_fmp.py</td><td>~45분</td></tr>
-  <tr><td>4</td><td>실전검증 스냅샷</td><td>update_competition.py</td><td>~1분</td></tr>
-  <tr><td>5</td><td>사전등록 시뮬레이션</td><td>curl /admin/run-pending-simulations</td><td>~1분</td></tr>
-  <tr><td>6</td><td>스코어 캐시 갱신</td><td>curl /api/cache/refresh</td><td>백그라운드 ~5분</td></tr>
-</table>
+<pre># StockDigging v2 — daily batch cron (UTC)
+# KR closes 06:30 UTC (no DST)
+40 6 * * 1-6  cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market KR >> logs/batch_kr.log 2>&amp;1
+30 7 * * 1-6  cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market KR >> logs/batch_kr.log 2>&amp;1
+30 8 * * 1-6  cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market KR --only-if-failed >> logs/batch_kr_retry.log 2>&amp;1
+30 9 * * 1-6  cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market KR --only-if-failed >> logs/batch_kr_retry.log 2>&amp;1
 
-<div class="box box-info">
-  <div class="box-label">FMP 전환 (2026-03-27)</div>
-  US 데이터 소스가 yfinance에서 FMP로 전면 교체되었다. FMP /stable/ 엔드포인트를 사용하며, PER/PBR은 DB 재무제표(TTM) + FMP 종가로 직접 계산한다. ROE/영업이익률/배당수익률은 FMP key-metrics-ttm/ratios-ttm에서 조회한다. US 밸류에이션 소요 시간(~45분)은 FMP Starter 플랜 rate limit(300/분) 때문이며, Ultimate 전환 시 ~5분으로 단축 가능.
-</div>
+# US closes 20:00 UTC (EDT) / 21:00 UTC (EST) — DST 자동 처리
+10 20 * * 1-5 cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market US >> logs/batch_us.log 2>&amp;1
+10 21 * * 1-5 cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market US >> logs/batch_us.log 2>&amp;1
+ 0 22 * * 1-5 cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market US --only-if-failed >> logs/batch_us_retry.log 2>&amp;1
+ 0 23 * * 1-5 cd /var/www/stockdigging/backend && .venv/bin/python3 -m scripts.automation.run_daily --market US --only-if-failed >> logs/batch_us_retry.log 2>&amp;1
+
+# Pre-warm indices cache every 5 min
+*/5 * * * * curl -s http://127.0.0.1:8000/api/indices > /dev/null 2>&amp;1</pre>
+
+<pre># 크론 확인/수정
+crontab -l          # 현재 등록된 크론 확인
+crontab /tmp/new_crontab.txt  # 전체 교체</pre>
 
 
 <!-- ============================================================ -->
@@ -256,584 +260,344 @@ crontab -l</pre>
 <!-- ============================================================ -->
 <h2 class="chapter">5. 데이터 소스 원칙</h2>
 
-<div class="box box-accept">
-  <div class="box-label">경고</div>
-  DB에 데이터를 쓰는 작업은 반드시 확인 후 실행할 것. 과거 서버에서 잘못된 데이터를 덮어쓴 사고가 있었다. 특히 밸류에이션(PER/PBR/ROE) 데이터를 신뢰할 수 없는 소스로 덮어쓰면 전체 스코어링이 오염된다.
-</div>
-
 <table>
-  <tr><th>데이터</th><th>신뢰 소스</th><th>스크립트</th><th>비고</th></tr>
-  <tr><td>KR 재무제표</td><td>DART zip (직접 다운로드) + DART API</td><td>import_dart_bulk.py / collectors/kr/financial.py</td><td>분기 크론</td></tr>
-  <tr><td>KR 배당금</td><td>DART 배당 공시 API</td><td>collect_kr_dividends_dart_api.py</td><td>연 1회 (사업보고서 후)</td></tr>
-  <tr><td>KR PER/PBR/ROE</td><td>calc_kr_valuations.py (DART 재무 + 종가)</td><td>auto_daily.sh에서 매일 실행</td><td>Naver 사용 안 함</td></tr>
-  <tr><td>KR 종가</td><td>pykrx (KRX 공식)</td><td>collectors/kr/price.py</td><td>매일 크론</td></tr>
-  <tr><td>US 재무제표</td><td>FMP (유료) + db/ zip</td><td>collectors/us/financial.py</td><td>분기 크론</td></tr>
-  <tr><td>US 종가</td><td>FMP /stable/quote</td><td>collect_us_prices_fmp.py</td><td>SLA 보장, Starter 플랜</td></tr>
-  <tr><td>US 밸류에이션</td><td>FMP + DB TTM 계산</td><td>calc_us_valuations_fmp.py</td><td>PER/PBR: DB 재무+FMP종가, ROE/배당: FMP API</td></tr>
-  <tr><td>US 시가총액</td><td>FMP /stable/quote</td><td>collect_us_prices_fmp.py</td><td>stocks.market_cap 자동 업데이트</td></tr>
-  <tr><td>기술적 지표</td><td>자체 계산 (종가 기반)</td><td>calculators/technical.py</td><td>매일 크론</td></tr>
+  <tr><th>데이터</th><th>소스</th><th>경로</th><th>주기</th></tr>
+  <tr><td>KR 종가 + 시총</td><td>pykrx (KRX)</td><td>collectors/kr/price.py</td><td>매일 크론</td></tr>
+  <tr><td>KR 밸류에이션</td><td>DART 재무 + 종가 계산</td><td>collectors/kr/valuation.py</td><td>매일 크론 (KR 배치 2단계)</td></tr>
+  <tr><td>KR 재무제표</td><td>DART ZIP (분기 공시)</td><td>collectors/kr/financial.py</td><td>분기 (수동 실행)</td></tr>
+  <tr><td>US 종가</td><td>yfinance</td><td>collectors/us/price.py</td><td>매일 크론</td></tr>
+  <tr><td>US 재무제표</td><td>FMP Starter</td><td>collectors/us/financial.py</td><td>분기 (수동 실행)</td></tr>
+  <tr><td>US 밸류에이션</td><td>valuations 테이블 (FMP 기반)</td><td>collectors/us/valuation.py</td><td>분기 크론 후 계산</td></tr>
+  <tr><td>지수 (5종)</td><td>FMP /stable/quote</td><td>services/market_data.py</td><td>5분 TTL 메모리 캐시</td></tr>
+  <tr><td>환율</td><td>FMP (지수 캐시 공유)</td><td>services/market_data.py</td><td>동일</td></tr>
 </table>
 
-<div class="box box-rebut">
-  <div class="box-label">원칙</div>
-  <ul style="margin-bottom:0">
-    <li>KR/US 시가총액은 모두 <code>stocks.market_cap</code>에서 로드 (KR: pykrx, US: FMP에서 매일 갱신)</li>
-    <li>부채비율은 한국 표준(부채총계/자본총계) 사용. KR/US 동일 기준.</li>
-    <li>PER sanitize: &lt;0.5 또는 &gt;1000이면 None 처리</li>
-    <li>PBR sanitize: &lt;0.05 또는 &gt;200이면 None 처리</li>
-  </ul>
+<div class="box box-danger">
+  <div class="box-label">US 시가총액 — valuations.market_cap 사용 금지</div>
+  FMP가 ADR(TSM/BABA/ASML 등 230여 종목)의 market_cap을 현지 통화(TWD/CNY/EUR)로 저장해 랭킹을 오염시킨다.
+  <strong>실제 US 시총 = <code>DailyPrice.close × Financial.shares_outstanding</code></strong> (항상 USD) 로 계산. TSM($1.92T), ASML($564B) 등 ADR도 정확하게 반영됨.
+</div>
+
+<div class="box box-success">
+  <div class="box-label">KR 시총</div>
+  <code>stocks.market_cap</code> (원화) 사용. pykrx가 매일 갱신. KR/US 통화 혼합 금지.
 </div>
 
 
 <!-- ============================================================ -->
-<!-- 6. 서버 접속 및 기본 명령어 -->
+<!-- 6. precompute 정적 캐시 -->
 <!-- ============================================================ -->
-<h2 class="chapter">6. 서버 접속 및 기본 명령어</h2>
+<h2 class="chapter">6. precompute 정적 캐시</h2>
+<p>매일 배치 성공 후 <code>scripts/precompute_rankings.py</code>가 모든 정렬 조합의 결과를 JSON으로 저장한다. 프론트엔드는 이 정적 파일을 nginx를 통해 직접 서빙받으므로 FastAPI 부하가 없다.</p>
 
-<h3 class="section">6-1. SSH 접속</h3>
-<pre># SSH 접속
-ssh root@158.247.235.58
+<div class="ascii-diagram">data/rankings/
+├── KR_market_cap.json        # KR × 시가총액 정렬
+├── KR_per.json               # KR × PER 정렬
+├── ...                       # 25개 sort × 3 market = ~75개 파일
+├── US_market_cap.json
+├── ALL_market_cap.json       # KR + US 합산
+└── ALL_revenue.json</div>
 
-# 앱 경로로 이동
+<pre># 수동 재생성 (배치 실패 후 데이터 수집만 성공한 경우)
+cd /var/www/stockdigging/backend
+
+# KR만 재생성
+/var/www/stockdigging/.venv/bin/python3 -m scripts.precompute_rankings --market KR
+
+# US만 재생성
+/var/www/stockdigging/.venv/bin/python3 -m scripts.precompute_rankings --market US
+
+# ALL 재생성 (KR+US 합산 — --market US 로는 재생성 안 됨!)
+/var/www/stockdigging/.venv/bin/python3 -m scripts.precompute_rankings --market ALL
+
+# stats 캐시 재생성
+/var/www/stockdigging/.venv/bin/python3 -m scripts.precompute_stats KR
+/var/www/stockdigging/.venv/bin/python3 -m scripts.precompute_stats US</pre>
+
+<div class="box box-warn">
+  <div class="box-label">주의: ALL 파일은 별도 재생성 필요</div>
+  <code>--market US</code>는 <code>US_*.json</code>만 재생성한다. <code>ALL_*.json</code>은 반드시 <code>--market ALL</code>을 따로 실행해야 갱신된다. 프론트엔드에서 <code>?market=ALL</code>로 접속하면 <code>ALL_*.json</code>을 읽으므로 이 파일이 stale이면 데이터가 구버전으로 표시된다.
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 7. 서버 접속 및 기본 명령어 -->
+<!-- ============================================================ -->
+<h2 class="chapter">7. 서버 접속 및 기본 명령어</h2>
+
+<h3 class="section">7-1. SSH 접속</h3>
+<pre>ssh root@158.247.235.58
 cd /var/www/stockdigging</pre>
 
-<h3 class="section">6-2. 서비스 관리</h3>
-<pre># 서비스 상태 확인
-systemctl status stockdigging
-
-# 서비스 재시작
-systemctl restart stockdigging
-
-# nginx 상태 확인
+<h3 class="section">7-2. 서비스 관리</h3>
+<pre># 상태 확인
+systemctl status stockdigging   # FastAPI (uvicorn :8000)
+systemctl status stockdigging-next  # Next.js (:3000)
 systemctl status nginx
 
-# nginx 리로드 (설정 변경 시)
-systemctl reload nginx</pre>
+# 재시작
+systemctl restart stockdigging --no-block   # 비동기 (90초 타임아웃 회피)
+systemctl restart stockdigging-next --no-block
 
-<h3 class="section">6-3. 로그 확인</h3>
-<pre># KR 일일 배치 로그 (실시간)
-tail -f logs/batch_daily.log
+# 헬스체크 (재시작 후 확인)
+curl http://127.0.0.1:8000/api/health
+curl http://127.0.0.1:3000/</pre>
 
-# US 일일 배치 로그
-tail -f logs/batch_daily_us.log
+<h3 class="section">7-3. 로그 확인</h3>
+<pre># KR 배치 로그 (실시간)
+tail -f /var/www/stockdigging/logs/batch_kr.log
 
-# 월간 배치 로그
-tail -20 logs/cron_monthly.log
+# US 배치 로그
+tail -f /var/www/stockdigging/logs/batch_us.log
 
-# 분기 배치 로그
-tail -20 logs/cron_quarterly.log
+# 재시도 로그
+tail -20 /var/www/stockdigging/logs/batch_kr_retry.log
+tail -20 /var/www/stockdigging/logs/batch_us_retry.log
 
-# 서버 애플리케이션 로그
-journalctl -u stockdigging --since "1 hour ago"</pre>
+# 서비스 로그 (uvicorn)
+journalctl -u stockdigging --since "1 hour ago"
 
-<h3 class="section">6-4. 캐시 삭제 + 재시작 (스코어링 변경 시에만!)</h3>
-<pre># 스코어링 코드(scoring.py) 변경 시에만 실행
-rm -f data/score_cache.pkl &amp;&amp; systemctl restart stockdigging
+# nginx 에러 로그
+tail -20 /var/log/nginx/error.log</pre>
 
-# 캐시 워밍업 완료까지 약 5.5분 소요 (KR ~202초 + US ~120초)
-# 완료 확인:
-journalctl -u stockdigging --since "5 min ago" | grep "캐시 완료"</pre>
+<h3 class="section">7-4. DB 조회</h3>
+<pre># 실제 API가 사용하는 DB 경로
+# /var/www/stockdigging/db/stockdigging.db
 
-<div class="box box-accept">
-  <div class="box-label">주의</div>
-  UI/API만 변경한 경우 캐시를 삭제하지 말 것. Vultr 서버 CPU 경고가 발생할 수 있다. 캐시 삭제는 오직 <code>scoring.py</code> 또는 <code>CACHE_SCHEMA_VERSION</code> 변경 시에만.
-</div>
-
-<h3 class="section">6-5. 코드 업데이트</h3>
-<pre># 로컬에서 git push 후 서버에서 pull
-cd /var/www/stockdigging
-git pull origin main
-
-# 서버에서 직접 파일 수정하지 말 것!
-# 항상: 로컬 수정 &gt; git push &gt; 서버 pull</pre>
-
-<h3 class="section">6-6. DB 조회</h3>
-<pre># 최신 데이터 날짜 확인
-cd /var/www/stockdigging
-.venv/bin/python3 -c "
+cd /var/www/stockdigging/backend
+/var/www/stockdigging/.venv/bin/python3 -c "
 import sqlite3
-c = sqlite3.connect('db/stockpulse.db')
-print('최신 가격:', c.execute('SELECT MAX(date) FROM daily_prices').fetchone()[0])
-print('최신 밸류:', c.execute('SELECT MAX(date) FROM valuations').fetchone()[0])
-print('KR 종목수:', c.execute(\"SELECT COUNT(*) FROM stocks WHERE market='KR'\").fetchone()[0])
-print('US 종목수:', c.execute(\"SELECT COUNT(*) FROM stocks WHERE market='US'\").fetchone()[0])
+c = sqlite3.connect('../db/stockdigging.db')
+print('최신 KR 가격:', c.execute(\"SELECT MAX(date) FROM daily_prices dp JOIN stocks s ON dp.stock_id=s.id WHERE s.market='KR'\").fetchone()[0])
+print('최신 US 가격:', c.execute(\"SELECT MAX(date) FROM daily_prices dp JOIN stocks s ON dp.stock_id=s.id WHERE s.market='US'\").fetchone()[0])
+print('KR 종목수:', c.execute(\"SELECT COUNT(*) FROM stocks WHERE market='KR' AND is_active=1\").fetchone()[0])
+print('US 종목수:', c.execute(\"SELECT COUNT(*) FROM stocks WHERE market='US' AND is_active=1\").fetchone()[0])
 "</pre>
 
-<h3 class="section">6-7. 유지보수 모드 (nginx 제어)</h3>
-<p><strong>유지보수 모드 켜기</strong> (사이트 접속 시 503 에러 표시):</p>
-<pre># 1. nginx 설정 파일 열기
-nano /etc/nginx/sites-enabled/stockdigging
+<h3 class="section">7-5. 무거운 작업 (nohup 백그라운드)</h3>
+<pre># 수집 스크립트가 5분+ 걸리면 반드시 nohup 백그라운드로 실행
+nohup /var/www/stockdigging/.venv/bin/python3 -m scripts.patch_kr_financials \
+  >> /var/www/stockdigging/logs/patch.log 2>&amp;1 &
 
-# 2. 아래 줄을 찾아서:
-#    proxy_pass http://127.0.0.1:8000;
-#
-#    다음으로 변경:
-#    return 503;
+# 진행상황 모니터링
+tail -f /var/www/stockdigging/logs/patch.log
 
-# 3. 저장 (Ctrl+O → Enter → Ctrl+X) 후 적용
-systemctl reload nginx</pre>
+# 실행 중인 배치 확인
+pgrep -fa python3</pre>
 
-<p><strong>유지보수 모드 끄기</strong> (사이트 정상 복구):</p>
-<pre># 1. 같은 파일 열기
-nano /etc/nginx/sites-enabled/stockdigging
+<h3 class="section">7-6. nginx 라우팅</h3>
+<pre># 설정 파일 위치
+cat /etc/nginx/sites-enabled/stockdigging
 
-# 2. 아래 줄을 찾아서:
-#    return 503;
-#
-#    다시 원복:
-#    proxy_pass http://127.0.0.1:8000;
+# 새 Next.js API 라우트 추가 시 nginx에 location 블록 추가 필요
+# /api/auth/, /api/favorites, /api/og 등은 Next.js(:3000)로 라우팅
+# /api/ (나머지)는 FastAPI(:8000)로 라우팅
 
-# 3. 저장 후 적용
-systemctl reload nginx</pre>
-
-<p><strong>현재 상태 확인</strong> (유지보수 모드인지 아닌지):</p>
-<pre>grep -n "return 503\|proxy_pass" /etc/nginx/sites-enabled/stockdigging</pre>
-
-<div class="box box-accept">
-  <div class="box-label">주의</div>
-  유지보수 모드는 반드시 nginx 설정 파일에서 제어한다. <code>quick_server.py</code>의 MAINTENANCE_MODE 변수가 아님에 주의. 유지보수 모드 중에도 서버(uvicorn)는 계속 실행 중이므로, 작업 끝나면 반드시 끄기를 실행할 것.
-</div>
+# 설정 변경 후 리로드
+nginx -t &amp;&amp; systemctl reload nginx</pre>
 
 
 <!-- ============================================================ -->
-<!-- 7. 트러블슈팅 -->
+<!-- 8. 매일 확인사항 -->
 <!-- ============================================================ -->
-<h2 class="chapter">7. 트러블슈팅</h2>
+<h2 class="chapter">8. 매일 확인사항</h2>
+<p>매일 아침(한국시간 09:00 이후 KR, 오전 06:00 이후 US) 아래를 확인한다.</p>
 
-<h3 class="section">7-1. 크론이 실행 안 됨</h3>
-<table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>증상</strong></td><td>로그 파일에 오늘 날짜 기록이 없음</td></tr>
-  <tr><td><strong>원인</strong></td><td>크론탭 미등록, 스크립트 경로/권한 오류, 크론 데몬 중지</td></tr>
-  <tr><td><strong>해결</strong></td><td>아래 순서로 확인</td></tr>
-</table>
+<ul class="checklist">
+  <li>이메일 알림 도착 확인 (성공 ✅ / 실패 ❌) — 이메일이 안 오면 크론이 아예 실행 안 된 것</li>
+  <li>batch_logs 테이블 확인: <code>SELECT * FROM batch_logs WHERE batch_date = date('now') ORDER BY id DESC LIMIT 20;</code></li>
+  <li><a href="https://stockdigging.com" target="_blank">stockdigging.com</a> 접속, 오늘 날짜 기준 데이터 표시 확인</li>
+  <li>data/rankings/ 파일 갱신 시간 확인: <code>ls -la /var/www/stockdigging/data/rankings/ | head -10</code></li>
+</ul>
 
 <div class="box box-info">
-  <div class="box-label">이메일 알림 (2026-03-27~)</div>
-  크론 배치 완료 시 이메일 알림이 발송된다 (성공 ✅ / 실패 ❌). <strong>매일 이메일 자체가 오지 않았다면, 크론이 아예 실행되지 않은 것이다.</strong> 이 경우 아래 SSH 확인부터 진행한다.
+  <div class="box-label">batch_logs 테이블</div>
+  <code>run_daily.py</code>가 각 단계(price, valuation, index_prices, macro_data) 결과를 <code>batch_logs</code> 테이블에 기록한다. admin 대시보드 또는 직접 SQL로 실행 현황 확인 가능.
 </div>
 
-<pre># 1. 크론탭 등록 확인
+
+<!-- ============================================================ -->
+<!-- 9. 트러블슈팅 -->
+<!-- ============================================================ -->
+<h2 class="chapter">9. 트러블슈팅</h2>
+
+<h3 class="section">9-1. 배치 이메일이 안 옴</h3>
+<table>
+  <tr><th>항목</th><th>내용</th></tr>
+  <tr><td>증상</td><td>크론 시각이 지났는데 성공/실패 이메일 없음</td></tr>
+  <tr><td>원인</td><td>크론탭 미등록, venv 경로 오류, 스크립트 임포트 에러</td></tr>
+</table>
+<pre># 1. 크론 등록 확인
 crontab -l
 
-# 2. 스크립트 실행 권한 확인
-ls -la /var/www/stockdigging/auto_daily.sh
+# 2. 수동 실행 테스트
+cd /var/www/stockdigging/backend
+/var/www/stockdigging/.venv/bin/python3 -m scripts.automation.run_daily --market KR
 
-# 3. 스크립트 수동 실행 테스트
-cd /var/www/stockdigging &amp;&amp; bash auto_daily.sh
+# 3. exchange_calendars 설치 확인 (없으면 휴장일 체크 실패 후 진행)
+/var/www/stockdigging/.venv/bin/pip show exchange-calendars</pre>
 
-# 4. 크론 데몬 상태
-systemctl status cron</pre>
-
-<h3 class="section">7-2. 사이트 접속 안 됨</h3>
+<h3 class="section">9-2. 데이터가 어제 기준으로 표시됨</h3>
 <table>
   <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>증상</strong></td><td>stockdigging.com 접속 시 에러 또는 빈 페이지</td></tr>
-  <tr><td><strong>원인</strong></td><td>서버 다운, nginx 설정 오류, 포트 8000 미리스닝</td></tr>
-  <tr><td><strong>해결</strong></td><td>아래 순서로 확인</td></tr>
+  <tr><td>증상</td><td>사이트에 "04/23 기준" 표시, 등락률 "—"</td></tr>
+  <tr><td>원인 1</td><td>배치 실패 → batch_logs 확인</td></tr>
+  <tr><td>원인 2</td><td>precompute가 특정 market만 실행됨 (ALL 파일 미갱신)</td></tr>
+  <tr><td>원인 3</td><td>브라우저 캐시 → Ctrl+Shift+R</td></tr>
 </table>
-<pre># 1. 앱 서비스 상태
-systemctl status stockdigging
+<pre># DB에 오늘 데이터 있는지 확인
+/var/www/stockdigging/.venv/bin/python3 -c "
+import sqlite3; c = sqlite3.connect('/var/www/stockdigging/db/stockdigging.db')
+print(c.execute(\"SELECT MAX(date) FROM daily_prices dp JOIN stocks s ON dp.stock_id=s.id WHERE s.market='US'\").fetchone()[0])
+"
 
-# 2. nginx 상태
+# precompute 수동 실행 (특히 ALL 확인)
+cd /var/www/stockdigging/backend
+/var/www/stockdigging/.venv/bin/python3 -m scripts.precompute_rankings --market ALL</pre>
+
+<h3 class="section">9-3. US 등락률이 모두 "—"</h3>
+<table>
+  <tr><th>항목</th><th>내용</th></tr>
+  <tr><td>증상</td><td>US 종목 change_pct 전부 NULL</td></tr>
+  <tr><td>원인</td><td>yfinance 10일 윈도우에서 change_pct 계산 후 upsert됨. 초기 수집 시 NULL일 수 있음</td></tr>
+</table>
+<pre># change_pct NULL 종목 수 확인
+/var/www/stockdigging/.venv/bin/python3 -c "
+import sqlite3; c = sqlite3.connect('/var/www/stockdigging/db/stockdigging.db')
+print('NULL rows:', c.execute(\"SELECT COUNT(*) FROM daily_prices dp JOIN stocks s ON dp.stock_id=s.id WHERE s.market='US' AND dp.change_pct IS NULL\").fetchone()[0])
+"
+# 배치 재실행하면 10일치 데이터로 change_pct 재계산됨</pre>
+
+<h3 class="section">9-4. 사이트 접속 안 됨</h3>
+<pre># 1. 서비스 상태 확인
+systemctl status stockdigging
+systemctl status stockdigging-next
 systemctl status nginx
 
-# 3. 포트 8000 리스닝 확인
-ss -tlnp | grep 8000
+# 2. 포트 리스닝 확인
+ss -tlnp | grep -E '8000|3000'
 
-# 4. 서비스 재시작
-systemctl restart stockdigging
-systemctl restart nginx
+# 3. 재시작 (비동기)
+systemctl restart stockdigging --no-block
+systemctl restart stockdigging-next --no-block
 
-# 5. 유지보수 모드 확인 (return 503이 있는지)
-grep -n "return 503" /etc/nginx/sites-enabled/stockdigging</pre>
+# 4. 헬스체크
+curl http://127.0.0.1:8000/api/health
+curl http://127.0.0.1:3000/</pre>
 
-<h3 class="section">7-3. 스코어가 어제 데이터</h3>
-<table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>증상</strong></td><td>TOP100 페이지의 가격/스코어가 전날 기준</td></tr>
-  <tr><td><strong>원인</strong></td><td>크론 미실행 또는 캐시 미갱신</td></tr>
-  <tr><td><strong>해결</strong></td><td>아래 순서로 확인</td></tr>
-</table>
-<pre># 1. 캐시 파일 날짜 확인
-ls -la /var/www/stockdigging/data/score_cache.pkl
+<h3 class="section">9-5. nginx 라우팅 오류 (Next.js API가 FastAPI로 잘못 라우팅)</h3>
+<pre># 증상: /api/auth/, /api/favorites, /api/og 가 404 또는 FastAPI 에러 반환
+# 원인: nginx location 블록 누락
 
-# 2. DB 최신 가격 날짜 확인
-cd /var/www/stockdigging
-.venv/bin/python3 -c "
-import sqlite3; c=sqlite3.connect('db/stockpulse.db')
-print(c.execute('SELECT MAX(date) FROM daily_prices').fetchone()[0])
-"
+# 확인
+grep -n "location" /etc/nginx/sites-enabled/stockdigging
 
-# 3. DB에 오늘 데이터가 있으면 캐시 API로 갱신 (재시작 불필요)
-curl -X POST http://127.0.0.1:8000/api/cache/refresh
-# 또는: admin.html &gt; 📡 서버 상태 탭 &gt; 🔄 캐시 갱신 버튼
+# Next.js API 라우트는 proxy_pass http://127.0.0.1:3000 블록에 포함되어야 함
+# 수정 후:
+nginx -t &amp;&amp; systemctl reload nginx</pre>
 
-# 4. DB에 오늘 데이터가 없으면 크론 수동 실행
-bash auto_daily.sh</pre>
+<h3 class="section">9-6. 종목 상세 "This page couldn't load" 크래시</h3>
+<pre># 증상: ValidationBadge 등에서 페이지 전체 크래시
+# 원인: API 404 응답의 data.items.length 접근 → TypeError
+# 해결: 해당 컴포넌트에 !data.items null 체크 추가 (이미 수정됨, 회귀 방지용)
 
-<h3 class="section">7-4. 특정 종목 스코어 이상</h3>
-<table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>증상</strong></td><td>특정 종목의 스코어가 0이거나 비정상적으로 높음</td></tr>
-  <tr><td><strong>원인</strong></td><td>밸류에이션 데이터 누락 또는 극단값</td></tr>
-  <tr><td><strong>해결</strong></td><td>해당 종목의 DB 데이터 확인</td></tr>
-</table>
-<pre># 종목 코드로 밸류에이션 확인 (예: 삼성전자 005930)
-cd /var/www/stockdigging
-.venv/bin/python3 -c "
-import sqlite3; c=sqlite3.connect('db/stockpulse.db')
-sid = c.execute(\"SELECT id FROM stocks WHERE code='005930'\").fetchone()[0]
-row = c.execute('SELECT * FROM valuations WHERE stock_id=? ORDER BY date DESC LIMIT 1', (sid,)).fetchone()
-print(row)
-"
-
-# 밸류에이션 수동 재계산
-.venv/bin/python3 scripts/collection/calc_kr_valuations.py --code 005930</pre>
-
-<h3 class="section">7-5. 서버 디스크 부족</h3>
-<table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>증상</strong></td><td>DB 쓰기 실패, 로그 기록 안 됨</td></tr>
-  <tr><td><strong>원인</strong></td><td>로그 파일 누적, DB 백업 파일 누적</td></tr>
-  <tr><td><strong>해결</strong></td><td>불필요한 파일 정리</td></tr>
-</table>
-<pre># 디스크 사용량 확인
-df -h /var/www/stockdigging
-du -sh /var/www/stockdigging/*
-
-# 30일 이상 된 로그 삭제
-find /var/www/stockdigging/logs/ -mtime +30 -delete
-
-# 오래된 DB 백업 정리 (최신 1개만 유지)
-ls -lt /var/www/stockdigging/db/*.bak*</pre>
-
-<h3 class="section">7-6. DB 손상</h3>
-<table>
-  <tr><th>항목</th><th>내용</th></tr>
-  <tr><td><strong>증상</strong></td><td>"database disk image is malformed" 에러</td></tr>
-  <tr><td><strong>원인</strong></td><td>비정상 종료, 동시 쓰기 충돌</td></tr>
-  <tr><td><strong>해결</strong></td><td>무결성 확인 후 백업 복구</td></tr>
-</table>
-<pre># 1. 무결성 확인
-cd /var/www/stockdigging
-sqlite3 db/stockpulse.db "PRAGMA integrity_check;"
-
-# 2. 백업에서 복구 (최신 백업 사용)
-ls -lt db/*.bak*
-cp db/stockpulse.db.bak_YYYYMMDD db/stockpulse.db
-systemctl restart stockdigging</pre>
+# API 확인
+curl http://127.0.0.1:8000/api/validation?code=XXXXX  # 404면 data.items=undefined</pre>
 
 
 <!-- ============================================================ -->
-<!-- 8. 코드 변경 시 체크리스트 -->
+<!-- 10. 코드 변경 체크리스트 -->
 <!-- ============================================================ -->
-<h2 class="chapter">8. 코드 변경 시 체크리스트</h2>
-<p>코드를 수정하고 서버에 반영할 때 따르는 표준 절차이다.</p>
+<h2 class="chapter">10. 코드 변경 체크리스트</h2>
 
-<ul class="checklist">
-  <li>로컬에서 테스트 완료</li>
-  <li><code>git commit</code> + <code>git push</code></li>
-  <li>서버에서 <code>git pull origin main</code></li>
-  <li>스코어링 변경인 경우: <code>CACHE_SCHEMA_VERSION</code> 올리기</li>
-  <li>서버 재시작: <code>systemctl restart stockdigging</code></li>
-  <li>사이트 확인: stockdigging.com 접속하여 정상 동작 확인</li>
-</ul>
-
-<div class="box box-accept">
-  <div class="box-label">절대 금지</div>
-  <ul style="margin-bottom:0">
-    <li>서버에서 직접 코드 수정 (항상 로컬 &gt; push &gt; pull)</li>
-    <li>UI만 바꿨는데 캐시 삭제 (CPU 과부하)</li>
-    <li>크론 실행 중 수동 스크립트 실행 (SQLite 동시 쓰기 불가)</li>
-  </ul>
+<div class="box box-danger">
+  <div class="box-label">과거 실수 → 재발 방지 (실제 사고 기록)</div>
+  <table style="margin:8px 0 0">
+    <tr><th>날짜</th><th>사고</th><th>원인</th><th>대책</th></tr>
+    <tr><td>2026-04</td><td>배포 중 서버 전체 다운 수 시간</td><td>deploy.py가 patch_*.py 수십 분짜리 패치를 자동 실행</td><td>deploy.py는 add_*.py만 실행 (수정 완료)</td></tr>
+    <tr><td>2026-04</td><td>종목 상세 페이지 크래시</td><td>404 응답의 data.items.length 접근 → TypeError</td><td>!data.items null 체크 추가 (수정 완료)</td></tr>
+    <tr><td>2026-04</td><td>외국인보유비율 데이터 없음</td><td>수집 함수 단위 테스트만, 배치 통합 테스트 미실시</td><td>run_daily에 valuation step 포함 확인</td></tr>
+    <tr><td>2026-04</td><td>US 등락률 전부 "—"</td><td>USPriceCollector가 change_pct를 records dict에 추가 안 함</td><td>consecutive-close 계산 후 upsert 로직 추가 (수정 완료)</td></tr>
+  </table>
 </div>
 
-
-<!-- ============================================================ -->
-<!-- 9. 스코어링 변경 시 체크리스트 -->
-<!-- ============================================================ -->
-<h2 class="chapter">9. 스코어링 변경 시 체크리스트</h2>
-<p>scoring.py 또는 스코어링 로직을 변경할 때는 일반 코드 변경보다 추가 단계가 필요하다.</p>
-
+<h3 class="section">코드 변경 시 필수 체크</h3>
 <ul class="checklist">
-  <li><code>scoring.py</code> 수정</li>
-  <li><code>quick_server.py</code>에서 <code>CACHE_SCHEMA_VERSION</code> 증가 (예: "v9" &gt; "v10")</li>
-  <li>로컬 테스트: 캐시 삭제 후 서버 시작</li>
-</ul>
-<pre># 로컬 테스트 (PowerShell)
-Remove-Item -Force -ErrorAction SilentlyContinue data/score_cache.pkl, db/score_cache.pkl, score_cache.pkl
-$env:PYTHONIOENCODING="utf-8"; python quick_server.py
-# "캐시 완료: N개 조합" 메시지 확인</pre>
-<ul class="checklist">
-  <li><code>git push</code> &gt; 서버 <code>git pull</code></li>
-  <li>서버에서 캐시 삭제 + 재시작</li>
-</ul>
-<pre># 서버
-cd /var/www/stockdigging
-rm -f data/score_cache.pkl &amp;&amp; systemctl restart stockdigging</pre>
-<ul class="checklist">
-  <li>캐시 자동 갱신 완료 대기 (약 5.5분)</li>
-  <li>사이트에서 스코어 정상 표시 확인</li>
-</ul>
-
-<div class="box box-info">
-  <div class="box-label">CACHE_SCHEMA_VERSION</div>
-  버전을 올리면 서버 시작 시 기존 캐시를 무시하고 전체 재계산한다. 현재 버전: <code>"v10"</code> (2026-03-28 Scoring v2).
-</div>
-
-
-<!-- ============================================================ -->
-<!-- 10. DB 관련 주의사항 -->
-<!-- ============================================================ -->
-<h2 class="chapter">10. DB 관련 주의사항</h2>
-
-<div class="box box-accept">
-  <div class="box-label">핵심 원칙</div>
-  <ul style="margin-bottom:0">
-    <li><strong>DB 직접 수정 금지.</strong> 반드시 스크립트를 통해 수정한다.</li>
-    <li><strong>서버에서 데이터 수집 스크립트를 함부로 실행하지 말 것.</strong> 기존 데이터를 덮어쓸 수 있다.</li>
-    <li><strong>DB 전체 교체(upload_db.py) 전 반드시 서버 DB 백업 확인.</strong></li>
-    <li><strong>SQLite는 동시 쓰기 불가.</strong> 크론 실행 중에는 수동 스크립트를 실행하지 않는다.</li>
-  </ul>
-</div>
-
-<h3 class="section">10-1. DB 백업</h3>
-<pre># 수동 백업
-cd /var/www/stockdigging
-cp db/stockpulse.db db/stockpulse.db.bak_$(date +%Y%m%d)
-
-# 백업 목록 확인
-ls -lt db/*.bak*</pre>
-
-<h3 class="section">10-2. DB 업로드 (로컬 &gt; 서버)</h3>
-<pre># 로컬에서 DB를 서버로 업로드할 때
-# 1. 서버 기존 DB 백업 (서버에서)
-cp db/stockpulse.db db/stockpulse.db.bak_$(date +%Y%m%d)
-
-# 2. 로컬에서 upload_db.py 실행
-python scripts/upload_db.py
-
-# 3. 서버 재시작
-systemctl restart stockdigging</pre>
-
-<h3 class="section">10-3. DB 스키마 핵심</h3>
-<table>
-  <tr><th>테이블</th><th>설명</th><th>주요 컬럼</th></tr>
-  <tr><td><code>stocks</code></td><td>종목 마스터</td><td>id, code, name, market(KR/US), market_cap, shares_outstanding</td></tr>
-  <tr><td><code>daily_prices</code></td><td>일별 가격</td><td>stock_id, date, open, high, low, close, volume</td></tr>
-  <tr><td><code>valuations</code></td><td>밸류에이션</td><td>stock_id, date, per, pbr, roe, roa, operating_margin, debt_ratio, dividend_yield, dividend_payout_ratio, market_cap(US용)</td></tr>
-  <tr><td><code>technical_indicators</code></td><td>기술적 지표</td><td>stock_id, date, rsi_14, pct_from_52w_high, ...</td></tr>
-  <tr><td><code>financials</code></td><td>재무제표</td><td>stock_id, fiscal_year, fiscal_quarter, period, revenue, operating_income, net_income, total_debt, total_equity, operating_cashflow, free_cashflow</td></tr>
-</table>
-
-
-<!-- ============================================================ -->
-<!-- 11. 서버 미완료 작업 -->
-<!-- ============================================================ -->
-<h2 class="chapter">11. 서버 미완료 작업</h2>
-
-<div class="box box-partial">
-  <div class="box-label">서버 접속 전 확인</div>
-  서버에 접속하여 작업하기 전에 반드시 <code>docs/SERVER_TODO.md</code>를 확인한다. 이전 세션에서 중단된 작업이 있을 수 있다.
-</div>
-
-<p>2026-03-27 기준:</p>
-
-<p><strong>완료 항목:</strong></p>
-<ul>
-  <li>&#x2705; 배당 데이터 수집 완료</li>
-  <li>&#x2705; auto_quarterly.sh 크론 등록 완료</li>
-  <li>&#x2705; yfinance &rarr; FMP 전환 완료 (2026-03-27)</li>
-  <li>&#x2705; 이메일 알림 시스템 구축 (2026-03-27)</li>
-  <li>&#x2705; 관리자 서버 상태 대시보드 (admin.html &#x1F4E1; 탭)</li>
-  <li>&#x2705; 관리자 데이터 재수집 기능 (admin.html &#x1F504; 버튼)</li>
-</ul>
-
-<p><strong>미완료 항목:</strong></p>
-<ul class="checklist">
-  <li>스코어링 전면 캘리브레이션 전환 (<code>docs/SCORING_CALIBRATION_OVERHAUL.md</code> 참고)</li>
-  <li>FMP 연간 플랜 전환 (월간 만료 전)</li>
-  <li>모니터링 강화: UptimeRobot (사이트 다운 감지)</li>
-  <li>자동 DB 백업 (S3/GCS)</li>
+  <li>새 정렬 지표 추가 시: <code>metric_stats.py::FILTERABLE</code>, <code>composite_rankings.py::_VALID_SORTS</code>, <code>frontend/lib/api.ts::FILTERABLE_SORTS</code> 세 곳 동기화</li>
+  <li>DB 컬럼 추가 시: <code>db/models.py</code>에도 반드시 추가 (없으면 setattr로 세팅해도 DB에 저장 안 됨)</li>
+  <li>새 Next.js API 라우트 추가 시: nginx에 별도 location 블록 필요 여부 확인</li>
+  <li>Supabase Auth 관련 수정: <code>@supabase/ssr</code> 사용 금지 — chunked cookie 버그. supabase-js + localStorage + Bearer 패턴 유지</li>
+  <li>배포 전 push 완료 확인, patch_*.py 마이그레이션 분리 확인</li>
 </ul>
 
 
 <!-- ============================================================ -->
-<!-- 12. 파일 구조 -->
+<!-- 11. 파일 구조 -->
 <!-- ============================================================ -->
-<h2 class="chapter">12. 파일 구조 (핵심만)</h2>
+<h2 class="chapter">11. 파일 구조 (핵심)</h2>
 
 <div class="ascii-diagram">/var/www/stockdigging/
-├── quick_server.py          # FastAPI 메인 서버
-├── auto_daily.sh            # KR 매일 크론
-├── auto_daily_us.sh         # US 매일 크론 (FMP)
-├── auto_monthly.sh          # 매월 크론
-├── auto_quarterly.sh        # 분기 크론
-├── run_batch.py             # 데이터 수집 CLI
-├── calibrate_scoring.py     # 스코어 캘리브레이션
-├── competition_manager.py   # 실전검증 관리
+├── deploy.py                   # 로컬에서 실행하는 배포 스크립트 (zero-downtime)
+├── .venv/                      # Python venv (exchange_calendars, pykrx 등 포함)
 │
-├── calculators/
-│   ├── scoring.py           # 스코어링 엔진 (1,907줄)
-│   ├── technical.py         # 기술적 지표 계산
-│   └── scoring_calibration.py  # 백분위 캘리브레이션
+├── backend/                    # FastAPI 백엔드
+│   ├── api/
+│   │   ├── main.py             #   FastAPI 앱 진입점
+│   │   └── routes/             #   rankings, stocks, search, metrics 등 라우터
+│   ├── collectors/
+│   │   ├── kr/                 #   price.py, valuation.py, financial.py
+│   │   └── us/                 #   price.py (yfinance), financial.py (FMP)
+│   ├── db/
+│   │   ├── database.py         #   SessionLocal, engine
+│   │   └── models.py           #   SQLAlchemy 모델 (DB 컬럼과 반드시 동기화)
+│   ├── scripts/
+│   │   ├── automation/
+│   │   │   ├── run_daily.py    #   메인 배치 스크립트 (크론이 호출)
+│   │   │   └── notify.py       #   이메일/Discord 알림
+│   │   ├── precompute_rankings.py  # 정렬 JSON 사전 계산
+│   │   └── precompute_stats.py     # 필터 stats 사전 계산
+│   └── .env                    #   API 키 (절대 커밋 금지)
 │
-├── collectors/
-│   ├── kr/                  # KR 수집기
-│   │   ├── price.py         #   pykrx 종가
-│   │   ├── financial.py     #   DART 재무제표
-│   │   ├── valuation.py     #   NAVER Finance 밸류에이션
-│   │   └── stock_list.py    #   종목목록
-│   └── us/                  # US 수집기
-│       ├── price.py         #   레거시(yfinance) — 미사용
-│       ├── financial.py     #   FMP 재무제표
-│       ├── valuation.py     #   레거시(yfinance) — 미사용
-│       └── stock_list.py    #   종목목록
-│
-├── scripts/
-│   ├── collection/          # 데이터 수집 스크립트 (핵심 7개 + _archive/ 34개)
-│   │   ├── collect_us_prices_fmp.py   # FMP US 가격 수집
-│   │   └── calc_us_valuations_fmp.py  # FMP US 밸류에이션 계산
-│   ├── automation/          # auto_*.sh 원본
-│   └── management/          # 대회/포트폴리오 관리
+├── frontend/                   # Next.js 16 프론트엔드
+│   ├── app/[locale]/           #   페이지 (Next.js App Router)
+│   ├── components/             #   RankingSection, FilterBar, AuthButton 등
+│   ├── messages/               #   ko.json, en.json (next-intl)
+│   └── lib/api.ts              #   API 타입 + FILTERABLE_SORTS (백엔드와 동기화 필수)
 │
 ├── db/
-│   └── stockpulse.db        # 메인 DB (2.1GB)
+│   └── stockdigging.db         # 메인 DB (~2.5GB, gitignored)
 │
 ├── data/
-│   ├── score_cache.pkl      # 스코어 캐시 (17MB)
-│   ├── competition.db       # 대회 DB (1.1GB)
-│   ├── users.db             # 유저 DB
-│   ├── articles.db          # 블로그 DB
-│   └── scoring_calibration.json  # 캘리브레이션 데이터
+│   ├── rankings/               # precompute 결과 JSON (nginx /data/ alias로 서빙)
+│   └── stats_cache.json        # 필터 슬라이더용 통계
 │
-├── frontend/                # HTML/JS/CSS (멀티페이지)
-│   ├── index.html           #   홈
-│   ├── top100.html          #   TOP 100 스크리닝
-│   ├── stock.html           #   종목 상세
-│   ├── test.html            #   투자 성향 진단
-│   ├── result.html          #   진단 결과
-│   ├── strategy.html        #   전략 상세
-│   ├── types.html           #   전략 유형 목록
-│   ├── css/main.css         #   공통 스타일
-│   └── js/                  #   JavaScript
-│
-├── logs/                    # 크론 로그
-│   ├── batch_daily.log
-│   ├── batch_daily_us.log
-│   ├── cron_monthly.log
-│   └── cron_quarterly.log
-│
-└── .env                     # API 키, 설정 (DART_API_KEY 등)</div>
+└── logs/
+    ├── batch_kr.log
+    ├── batch_kr_retry.log
+    ├── batch_us.log
+    └── batch_us_retry.log</div>
 
 
 <!-- ============================================================ -->
-<!-- 13. 미완료 로드맵 -->
+<!-- 12. 미완료 작업 / 로드맵 -->
 <!-- ============================================================ -->
-<h2 class="chapter">13. 미완료 로드맵</h2>
-<p>기술 부채 및 인프라 개선 과제를 우선순위별로 정리한다.</p>
+<h2 class="chapter">12. 미완료 작업 / 로드맵</h2>
 
 <table>
-  <tr><th>우선순위</th><th>과제</th><th>상태</th><th>예상 소요</th><th>비고</th></tr>
-  <tr><td><strong>P1</strong></td><td>PostgreSQL 전환</td><td>미착수</td><td>3주</td><td>SQLite 동시성 한계 해소</td></tr>
-  <tr><td><strong>P1</strong></td><td>US 상용 API 전환</td><td>완료</td><td>-</td><td>FMP 전환 완료 (2026-03-27)</td></tr>
-  <tr><td><strong>P1</strong></td><td>모니터링 도입</td><td>부분 완료</td><td>1주</td><td>이메일 알림 완료, UptimeRobot 미착수</td></tr>
-  <tr><td><strong>P1</strong></td><td>스코어링 캘리브레이션 전환</td><td>설계 완료</td><td>2주</td><td>30개 지표 백분위 전환</td></tr>
-  <tr><td><strong>P2</strong></td><td>CI/CD 구축</td><td>미착수</td><td>2주</td><td>GitHub Actions + 자동 배포</td></tr>
-  <tr><td><strong>P2</strong></td><td>scoring.py 분리</td><td>미착수</td><td>2주</td><td>1,907줄 단일 파일 리팩토링</td></tr>
-  <tr><td><strong>P2</strong></td><td>결제 연동</td><td>미착수</td><td>2주</td><td>Toss Payments (PRO 플랜)</td></tr>
-  <tr><td><strong>P3</strong></td><td>실시간 스코어링</td><td>미착수</td><td>4주+</td><td>캐시 의존 구조 탈피</td></tr>
-  <tr><td><strong>P3</strong></td><td>영어 i18n</td><td>설계 완료</td><td>2주</td><td>~400개 문자열 번역</td></tr>
+  <tr><th>우선순위</th><th>항목</th><th>상태</th><th>비고</th></tr>
+  <tr><td>P1</td><td>KR financials.cash_on_hand 수집</td><td>진행 중</td><td>DART API로 채우기 (US 완료 후)</td></tr>
+  <tr><td>P1</td><td>Supabase 즐겨찾기 마이그레이션</td><td>설정 필요</td><td>Supabase 대시보드 SQL Editor 실행</td></tr>
+  <tr><td>P1</td><td>Google OAuth 활성화</td><td>설정 필요</td><td>Supabase > Auth > Providers > Google</td></tr>
+  <tr><td>P2</td><td>즐겨찾기 페이지 /favorites</td><td>미착수</td><td>Phase 5 후보</td></tr>
+  <tr><td>P2</td><td>섹터별 랭킹 /sector/[name]</td><td>미착수</td><td>Phase 5 후보</td></tr>
+  <tr><td>P2</td><td>AdSense 통합</td><td>미착수</td><td>광고 수익 모델</td></tr>
+  <tr><td>P3</td><td>PostgreSQL 전환</td><td>미착수</td><td>SQLite 동시성 한계 해소</td></tr>
+  <tr><td>P3</td><td>US 종목 확장 ($150M+ 소형주)</td><td>미착수</td><td>현재 2,445 → 3,000+ 목표</td></tr>
 </table>
-
-<div class="box box-info">
-  <div class="box-label">우선순위 기준</div>
-  <strong>P1</strong>: 서비스 안정성 또는 규제에 직접 영향. <strong>P2</strong>: 개발 생산성 또는 수익화에 영향. <strong>P3</strong>: 있으면 좋지만 당장 필수는 아님.
-</div>
-
-
-<!-- ============================================================ -->
-<!-- 14. 데이터 소스 전략 -->
-<!-- ============================================================ -->
-<h2 class="chapter">14. 데이터 소스 전략</h2>
-<p>현재 데이터 소스 구성과 향후 업그레이드 계획을 정리한다.</p>
-
-<h3 class="section">14-1. 현재 소스 구조 (종가 기준)</h3>
-
-<div class="ascii-diagram">[KR 데이터]
-  종가 (OHLCV)   ← pykrx      (KRX 비공식 크롤링, 무료, 종가만)
-  재무제표        ← DART API   (금감원 공식, 무료, 분기)
-  배당금          ← DART API   (공식, 연간)
-  시가총액        ← pykrx      → stocks.market_cap
-
-[US 데이터]
-  종가 (OHLCV)   ← FMP Starter  /stable/quote     (SLA 보장, $19/월 연간)
-  밸류에이션      ← FMP + DB TTM  calc_us_valuations_fmp.py
-  재무제표        ← FMP Starter  /stable/income-statement 등
-  시가총액        ← FMP          → stocks.market_cap 자동갱신
-
-[공통]
-  기술적 지표     ← 자체 계산    calculators/technical.py
-  스코어링        ← 자체 계산    calculators/scoring.py
-  캘리브레이션    ← 월 1회       calibrate_scoring.py</div>
-
-<h3 class="section">14-2. FMP 플랜 비교</h3>
-<table>
-  <tr><th>항목</th><th>Starter ($19/월)</th><th>Premium ($49/월)</th><th>Ultimate ($99/월)</th></tr>
-  <tr><td>API 호출</td><td>300/분</td><td>750/분</td><td><strong>3,000/분</strong></td></tr>
-  <tr><td>US 커버리지</td><td>✅</td><td>✅</td><td>✅</td></tr>
-  <tr><td><strong>글로벌 (KR 포함)</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong></td></tr>
-  <tr><td>분기 재무제표</td><td>✅</td><td>✅</td><td>✅</td></tr>
-  <tr><td>가격 히스토리</td><td>5년</td><td>전체</td><td>전체</td></tr>
-  <tr><td><strong>배치/벌크 API</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (크론 45분→2분)</td></tr>
-  <tr><td><strong>ETF 홀딩스</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (ETF 6전략 스코어링 가능)</td></tr>
-  <tr><td><strong>13F 기관투자</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (스마트머니 스크리닝)</td></tr>
-  <tr><td><strong>어닝콜 트랜스크립트</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (AI 실적 요약 콘텐츠)</td></tr>
-  <tr><td><strong>1분봉 인트라데이</strong></td><td>❌</td><td>❌</td><td><strong>✅</strong> (실시간 스코어링 기반)</td></tr>
-</table>
-
-<div class="box box-info">
-  <div class="box-label">현재 플랜: Starter ($19/월 연간)</div>
-  US 종가 + 분기 재무제표 + TTM 지표. PER/PBR은 DB 재무제표 + FMP 종가로 직접 계산 (SEC 공시 기반, yfinance보다 정확). 2026-03-27 교차검증 완료: PER 차이 3~10%, 시가총액 100% 일치, 배당수익률은 FMP가 더 정확.
-</div>
-
-<h3 class="section">14-3. KR 데이터 소스 비교</h3>
-<table>
-  <tr><th>항목</th><th>pykrx (현재)</th><th>한국투자증권 OpenAPI</th><th>FMP Ultimate</th></tr>
-  <tr><td>데이터 원본</td><td>KRX (거래소)</td><td>KRX (거래소)</td><td>KRX (간접)</td></tr>
-  <tr><td>가격 갱신</td><td><strong>종가만</strong></td><td><strong>실시간</strong> (웹소켓)</td><td>20분 지연</td></tr>
-  <tr><td>비용</td><td>무료</td><td>무료 (계좌 필요)</td><td>$99/월에 포함</td></tr>
-  <tr><td>안정성</td><td>⚠️ 비공식</td><td>✅ 공식</td><td>✅ 상용</td></tr>
-  <tr><td>재무제표</td><td>❌</td><td>❌</td><td>✅ (DART 간접)</td></tr>
-  <tr><td>실시간 스코어링</td><td>❌ 불가</td><td>✅ 가능</td><td>⚠️ 20분 지연</td></tr>
-</table>
-
-<div class="box box-rebut">
-  <div class="box-label">핵심 원칙</div>
-  <ul style="margin-bottom:0">
-    <li><strong>KR 재무제표 = DART가 유일한 공식 원본.</strong> FMP/Bloomberg도 한국 재무는 DART에서 가져온다. 대체 불가.</li>
-    <li><strong>KR 종가 = pykrx로 충분.</strong> 비공식이지만 KRX 원본 데이터. 실시간 필요 시 한국투자증권 OpenAPI로 전환.</li>
-    <li><strong>부채비율 = 한국 표준 (부채총계/자본총계).</strong> KR/US 동일 기준. yfinance의 debt/equity(이자부부채)와 다름.</li>
-  </ul>
-</div>
-
-<h3 class="section">14-4. 업그레이드 로드맵</h3>
-<table>
-  <tr><th>Phase</th><th>내용</th><th>비용 (월)</th><th>전제 조건</th></tr>
-  <tr><td><strong>Phase 1 (현재)</strong></td><td>종가 기준. KR: pykrx+DART, US: FMP Starter</td><td>$25</td><td>-</td></tr>
-  <tr><td><strong>Phase 2</strong></td><td>FMP Ultimate. 벌크 API + ETF/13F/어닝콜 + 글로벌</td><td>$105</td><td>PRO 유료 사용자 확보</td></tr>
-  <tr><td><strong>Phase 3</strong></td><td>실시간 스코어링. 한투 WebSocket(KR) + FMP 1분봉(US). TOP 500 장중 1분 갱신.</td><td>$123</td><td>Phase 2 + 서버 업그레이드 ($24 서버)</td></tr>
-</table>
-
-<div class="box box-partial">
-  <div class="box-label">Phase 3 실시간 스코어링 참고</div>
-  30개 지표 중 18개가 가격 의존 (PER, PBR, 시가총액, 모멘텀, RSI, 52주고점, 배당수익률 등). 장중 2~3% 변동 시 총점이 바뀌고 TOP100 순위 변동 가능. 재무 지표(ROE, 부채비율 등)는 분기 캐시 유지. TOP 500 가격지표만 재계산 시 ~9초 소요 → 1분 주기 충분.
-</div>
 
 
 <div class="footer">
-  StockDigging &nbsp;|&nbsp; 운영 플레이북 &nbsp;|&nbsp; 2026-03-27 &nbsp;|&nbsp; 내부 운영용
+  StockDigging v2 &nbsp;|&nbsp; 운영 플레이북 &nbsp;|&nbsp; 2026-04-25 &nbsp;|&nbsp; 내부 운영용
 </div>
 
 </div>

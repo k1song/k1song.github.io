@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>StockDigging — 외부 비판 검토 및 대응</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.8; display: flex; }
+
+  /* 사이드바 */
+  .sidebar {
+    width: 260px; min-height: 100vh; background: #fff; border-right: 1px solid #e2e8f0;
+    padding: 24px 16px; position: fixed; top: 0; left: 0; overflow-y: auto; z-index: 10;
+  }
+  .sidebar-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid #3b82f6; }
+  .sidebar-title a { color: inherit; text-decoration: none; }
+  .nav-category { font-size: 0.8rem; font-weight: 700; color: #3b82f6; letter-spacing: 0.5px; margin-top: 20px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .nav-category .arrow { font-size: 0.6rem; transition: transform 0.2s; }
+  .nav-category.collapsed .arrow { transform: rotate(-90deg); }
+  .nav-list { list-style: none; padding: 0; }
+  .nav-list.collapsed { display: none; }
+  .nav-item a { display: block; padding: 6px 12px; font-size: 0.9rem; color: #475569; text-decoration: none; border-radius: 6px; transition: all 0.15s; }
+  .nav-item a:hover { background: #e2e8f0; color: #1e293b; }
+  .nav-item a.active { background: #dbeafe; color: #1e40af; font-weight: 500; }
+  .sidebar-footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; }
+  .sidebar-footer a { color: #64748b; text-decoration: none; }
+
+  .page-body { margin-left: 260px; flex: 1; min-width: 0; }
+  .container { max-width: 780px; margin: 0 auto; padding: 40px 24px 80px; }
+  @media (max-width: 768px) { .sidebar { display: none; } .page-body { margin-left: 0; } }
+
+  /* 헤더 */
+  .hero { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 48px 24px; text-align: center; margin-bottom: 40px; }
+  .hero h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 8px; }
+  .hero p { color: #94a3b8; font-size: 1rem; }
+  .hero .divider { width: 50px; height: 2px; background: #3b82f6; margin: 20px auto; }
+  .hero .meta { font-size: 0.8rem; color: #64748b; margin-top: 16px; }
+
+  /* 챕터 */
+  h2.chapter { font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-top: 48px; margin-bottom: 8px;
+    padding-bottom: 8px; border-bottom: 3px solid #3b82f6; }
+  h3.section { font-size: 1.15rem; font-weight: 700; color: #1e40af; margin: 32px 0 12px; }
+
+  p { margin-bottom: 12px; }
+  strong { font-weight: 700; }
+
+  /* 박스 */
+  .box { padding: 16px 20px; border-radius: 8px; margin: 16px 0; border-left: 4px solid; font-size: 0.95rem; }
+  .box-accept { background: #fef2f2; border-color: #dc2626; color: #991b1b; }
+  .box-rebut { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+  .box-partial { background: #fffbeb; border-color: #d97706; color: #92400e; }
+  .box-label { font-weight: 700; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
+
+  /* 테이블 */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.9rem; }
+  th { background: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 8px 12px; border: 1px solid #e2e8f0; }
+  td { padding: 8px 12px; border: 1px solid #e2e8f0; }
+  tr:nth-child(even) td { background: #f8fafc; }
+
+  ul { margin: 8px 0 16px 20px; }
+  li { margin-bottom: 6px; }
+
+  .footer { text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar"></nav>
+
+<div class="page-body">
+<div class="hero">
+  <h1>StockDigging</h1>
+  <p>외부 비판 검토 및 대응</p>
+  <div class="divider"></div>
+  <div class="meta">2026년 1분기 &nbsp;|&nbsp; 원문: stockdigging-reality-check.html</div>
+</div>
+
+<div class="container">
+
+<h2 class="chapter">1. 비판 개요</h2>
+<p>외부 분석 문서 "StockDigging 사업화의 현실"에 대한 항목별 검토이다. 해당 문서는 StockDigging의 사업화 가능성을 분석하며, 규제, 비용, 데이터, 시뮬레이션 등 다양한 측면에서 비판을 제기한다.</p>
+
+<table>
+  <tr><th>분류</th><th>건수</th><th>주요 항목</th></tr>
+  <tr><td>수용</td><td>3건</td><td>면책조항 미비, 시뮬레이션 지표 부족, 심리측정학적 검증 부재</td></tr>
+  <tr><td>반박</td><td>4건</td><td>카테고리 오류(로보어드바이저), 비용 과대산정, Exit 모델, 서비스 수준 과소평가</td></tr>
+  <tr><td>부분 수용</td><td>2건</td><td>데이터 출처/생존편향, 규제 리스크</td></tr>
+</table>
+
+<h2 class="chapter">2. 근본적 프레이밍 오류: 카테고리 문제</h2>
+<p>해당 비판 문서의 가장 큰 문제는 StockDigging을 <strong>"로보어드바이저"</strong>로 분류하고, 그 기준으로 평가한다는 점이다. 이 전제가 틀리면 비용 산정, 규제 요건, 경쟁사 비교, Exit 시나리오가 모두 틀어진다.</p>
+
+<table>
+  <tr><th>항목</th><th>비판 문서의 전제</th><th>StockDigging의 실제</th></tr>
+  <tr><td>서비스 분류</td><td>로보어드바이저</td><td>스크리닝 도구 + SaaS</td></tr>
+  <tr><td>규제</td><td>투자일임업 (자기자본 5억)</td><td>유사투자자문업 신고 (500만원)</td></tr>
+  <tr><td>경쟁사</td><td>파운트, 핀트, 에임</td><td>Simply Wall St, TipRanks, Seeking Alpha</td></tr>
+  <tr><td>필요 인력</td><td>8~10명 (운용인력 포함)</td><td>2~3명 (개발 + 운영)</td></tr>
+  <tr><td>1년차 비용</td><td>13~16억원</td><td>SaaS 모델 1~2억원 수준</td></tr>
+  <tr><td>Exit 모델</td><td>금융사 매각</td><td>ARR 기반 SaaS 밸류에이션</td></tr>
+</table>
+
+<div class="box box-rebut">
+  <div class="box-label">반박</div>
+  StockDigging은 "이 종목을 사라"고 말하지 않는다. "이 기준으로 정렬하면 이런 종목이 나온다"를 보여주는 스크리닝 도구이다. Simply Wall St, Seeking Alpha, TipRanks 모두 종목 점수/순위를 보여주지만 투자일임업 등록 없이 전 세계에서 운영 중이다.
+</div>
+
+<h2 class="chapter">3. 수용하는 비판</h2>
+
+<h3 class="section">3-1. 면책조항/법적 체계 미비</h3>
+<div class="box box-accept">
+  <div class="box-label">수용</div>
+  비판: 면책조항이 2문장에 불과하다. 사업자 정보 미공개, 유사투자자문업 등록 여부 불명확.
+</div>
+<p>이 비판은 타당하다. 현재 면책조항은 업계 기준에 미달하며, 서비스 공식 런칭 전 반드시 정비해야 한다.</p>
+<p><strong>대응 계획:</strong></p>
+<ul>
+  <li>면책조항 별도 페이지 작성 (투자 위험 고지, 과거 성과 ≠ 미래 수익 등)</li>
+  <li>유사투자자문업 신고 진행 (자본금 500만원, 행정 절차)</li>
+  <li>사업자 정보 공개 (서비스 하단 또는 별도 페이지)</li>
+  <li>이용약관/개인정보처리방침 보강</li>
+</ul>
+<p><strong>시급도: 즉시.</strong> 런칭 전 완료 필수.</p>
+
+<h3 class="section">3-2. 시뮬레이션 지표 부족</h3>
+<div class="box box-accept">
+  <div class="box-label">수용</div>
+  비판: 수익률 숫자만 제시하고 MDD, 샤프비율, 변동성 등 리스크 지표가 없다. 리밸런싱 기준 미공개.
+</div>
+<p>이 비판도 타당하다. 수익률만으로는 전략의 품질을 판단할 수 없다.</p>
+<p><strong>대응 계획:</strong></p>
+<ul>
+  <li>시뮬레이션 결과에 MDD, 샤프비율, 변동성, 최대 연속 손실 추가</li>
+  <li>리밸런싱 기준(ATR 기반) 투명하게 공개</li>
+  <li>백테스트 한계(종가 기반, 슬리피지 미반영 등) 명시</li>
+</ul>
+<p><strong>시급도: 단기.</strong> 데이터는 이미 계산 가능하며 표시 기능 추가만 필요.</p>
+
+<h3 class="section">3-3. 심리측정학적 검증 부재</h3>
+<div class="box box-accept">
+  <div class="box-label">수용</div>
+  비판: 30문항 퀴즈에 대한 학술적 검증(신뢰도, 타당도)이 없다. Riskalyze(노벨상 이론), FinaMetrica(52만건 데이터) 대비 근거 부족.
+</div>
+<p>장기적으로 맞는 지적이다. 다만 모든 초기 서비스가 첫날부터 52만건 데이터를 가질 수는 없다.</p>
+<p><strong>대응 계획:</strong></p>
+<ul>
+  <li>사용자 데이터 축적 후 검사-재검사 신뢰도 분석 (장기)</li>
+  <li>퀴즈 설계 근거 문서화 (각 문항이 어떤 스타일에 기여하는지 공개)</li>
+  <li>학술적 검증은 PMF 달성 후 우선순위에 반영</li>
+</ul>
+<p><strong>시급도: 장기.</strong> 현 단계에서는 설계 근거 투명화로 대응.</p>
+
+<h2 class="chapter">4. 반박하는 비판</h2>
+
+<h3 class="section">4-1. "투자일임업 등록 필요, 1년차 13~16억"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 카테고리 오류</div>
+  비판의 전제: StockDigging이 투자일임업에 해당하므로 자기자본 5억, 인력 8~10명, 연간 13~16억이 필요하다.
+</div>
+<p>StockDigging은 투자일임업이 아니다. 고객 자산을 운용하지 않고, 매매를 대행하지 않는다. 스코어링 기준으로 종목을 정렬하여 보여주는 스크리닝 도구이다.</p>
+<p>글로벌에서 동일한 모델로 운영 중인 서비스들:</p>
+<table>
+  <tr><th>서비스</th><th>기능</th><th>투자일임업 등록</th></tr>
+  <tr><td>Simply Wall St</td><td>종목 점수 + 순위 제시</td><td>X</td></tr>
+  <tr><td>Seeking Alpha</td><td>종목 등급 A+~F 제시</td><td>X</td></tr>
+  <tr><td>TipRanks</td><td>Smart Score 1~10 제시</td><td>X</td></tr>
+  <tr><td>Finviz</td><td>스크리닝 + 순위</td><td>X</td></tr>
+</table>
+
+<h3 class="section">4-2. "경쟁사 = 파운트/핀트/에임"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 비교 대상 오류</div>
+  비판: 로보어드바이저(파운트 AUM 1조, 핀트 AUM 4,389억)와 경쟁해야 하므로 진입 장벽이 높다.
+</div>
+<table>
+  <tr><th>항목</th><th>로보어드바이저</th><th>StockDigging</th></tr>
+  <tr><td>핵심 기능</td><td>고객 자산 운용 (일임)</td><td>종목 스코어링/정렬 (정보 제공)</td></tr>
+  <tr><td>고객 자산 보유</td><td>O (수백~수천억)</td><td>X</td></tr>
+  <tr><td>매매 대행</td><td>O</td><td>X</td></tr>
+  <tr><td>수익 모델</td><td>운용 수수료 + 성과보수</td><td>SaaS 구독 + B2B CPA</td></tr>
+  <tr><td>규제</td><td>투자일임업</td><td>유사투자자문업 (또는 미해당)</td></tr>
+  <tr><td>진입 자본</td><td>5억원+</td><td>500만원</td></tr>
+</table>
+
+<h3 class="section">4-3. "트래픽 모아서 매각은 환상"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 수익 모델 오해</div>
+  비판: 금융사는 트래픽이 아닌 "라이선스 × 운용실적 × 전문인력"을 평가한다. Wealthfront처럼 14년이 걸린다.
+</div>
+<p>StockDigging의 수익 모델은 "트래픽 모아서 금융사에 매각"이 아니다.</p>
+<p><strong>실제 수익 구조:</strong></p>
+<ul>
+  <li>B2C: Premium 구독 (₩4,900/월)</li>
+  <li>B2B: 증권사 매매 연결 CPA (토스증권 등)</li>
+  <li>B2B: 스코어링 엔진 API 라이선스 (장기)</li>
+</ul>
+<p>밸류에이션도 AUM 기반이 아닌 ARR(연간 반복 매출) 기반 SaaS 멀티플이 적용된다.</p>
+
+<h3 class="section">4-4. "출발선에 서기 전 단계"</h3>
+<div class="box box-rebut">
+  <div class="box-label">반박 — 서비스 수준 과소평가</div>
+  비판: 데이터 근거, 시뮬레이션 깊이, 학술적 기반, 법적 토대, 자본과 인력이 모두 부족하다.
+</div>
+<p>현재 StockDigging이 달성한 것:</p>
+<ul>
+  <li>라이브 서비스 운영 중 (stockdigging.com)</li>
+  <li>KR 2,663개 + US 6,716개 종목 커버</li>
+  <li>109개 API 엔드포인트</li>
+  <li>10,700회+ 시뮬레이션 수행</li>
+  <li>6단계 체계적 연구 파이프라인 (ATR 최적화 ~ ML 전략 예측)</li>
+  <li>크론 기반 자동 데이터 수집/갱신</li>
+</ul>
+<p>"출발선 전"이라는 평가는 사업화 관점에서는 부분적으로 맞지만, 제품/기술 관점에서는 과소평가이다. <strong>1인이 이 수준의 시스템을 구축한 것 자체가 실행력의 증거다.</strong></p>
+
+<h2 class="chapter">5. 부분 수용하는 비판</h2>
+
+<h3 class="section">5-1. 데이터 출처/생존편향</h3>
+<div class="box box-partial">
+  <div class="box-label">부분 수용</div>
+  비판: 데이터 출처 미명시, 생존편향 미통제, 배당금/수수료 미반영.
+</div>
+<p><strong>수용:</strong> 데이터 출처를 서비스 내에 더 명확히 표시해야 한다. 생존편향 통제는 완벽하지 않다.</p>
+<p><strong>반박:</strong></p>
+<ul>
+  <li>KR 데이터: DART API(공식), Naver Finance API — 출처 명시 가능</li>
+  <li>배당금/수수료 미반영: 이미 서비스 내에 명시되어 있음</li>
+  <li>생존편향: is_active 플래그로 상장폐지 종목 관리 중</li>
+</ul>
+
+<h3 class="section">5-2. 규제 리스크</h3>
+<div class="box box-partial">
+  <div class="box-label">부분 수용</div>
+  비판: 종목을 보여주는 순간 규제 대상이다. 유사투자자문업 신고 필수.
+</div>
+<p><strong>수용:</strong> 유사투자자문업 신고는 안전을 위해 진행해야 한다.</p>
+<p><strong>반박:</strong> 투자일임업(자기자본 5억) 등록이 필요하다는 주장은 과도하다. StockDigging은 고객 자산을 운용하지 않으며, 매매를 대행하지 않는다.</p>
+
+<h2 class="chapter">6. 종합 대응 및 액션 플랜</h2>
+<p>이 비판 문서는 StockDigging을 로보어드바이저로 잘못 분류한 데서 출발하여, 규제/비용/경쟁사 분석이 전반적으로 과대 산정되었다. 그러나 법적 체계, 시뮬레이션 지표, 데이터 투명성에 대한 지적은 타당하며 즉시 대응이 필요하다.</p>
+
+<h3 class="section">액션 플랜</h3>
+<table>
+  <tr><th>시급도</th><th>과제</th><th>예상 소요</th></tr>
+  <tr><td>즉시</td><td>면책조항 별도 페이지 작성</td><td>1~2일</td></tr>
+  <tr><td>즉시</td><td>사업자 정보 공개</td><td>1일</td></tr>
+  <tr><td>단기</td><td>유사투자자문업 신고</td><td>2~4주</td></tr>
+  <tr><td>단기</td><td>시뮬레이션에 MDD/샤프비율 추가</td><td>1~2주</td></tr>
+  <tr><td>단기</td><td>데이터 출처 명시 페이지</td><td>1~2일</td></tr>
+  <tr><td>단기</td><td>리밸런싱 기준(ATR) 공개</td><td>1주</td></tr>
+  <tr><td>장기</td><td>퀴즈 설계 근거 문서화</td><td>1~2개월</td></tr>
+  <tr><td>장기</td><td>심리측정학적 검증 (데이터 축적 후)</td><td>PMF 이후</td></tr>
+</table>
+
+<h3 class="section">이 비판을 활용하는 법</h3>
+<p>이 문서의 존재 자체가 오히려 기회다. 미팅에서 선제적으로 언급하면:</p>
+<ul>
+  <li><strong>"이런 비판이 있다. 우리도 인지하고 있다"</strong> → 객관성과 성숙도를 보여줌</li>
+  <li><strong>"이건 맞다. 그래서 이렇게 대응한다"</strong> → 실행력을 보여줌</li>
+  <li><strong>"이건 카테고리 오류다"</strong> → 사업 모델에 대한 정확한 이해를 보여줌</li>
+</ul>
+
+<div class="footer">
+  StockDigging &nbsp;|&nbsp; 비판 검토 및 대응 &nbsp;|&nbsp; 2026 Q1 &nbsp;|&nbsp; 내부 검토용
+</div>
+
+</div>
+</div><!-- page-body -->
+<script src="/nav.js"></script>
+</body>
+</html>

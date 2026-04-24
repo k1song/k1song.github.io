@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>StockDigging - WFR 독립 검토 패널 (2026-04-20)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  header { border-bottom: 2px solid #334155; padding-bottom: 20px; margin-bottom: 32px; }
+  h1 { color: #f8fafc; margin: 0 0 8px 0; font-size: 1.9rem; }
+  .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  nav.toc { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+  nav.toc h2 { color: #60a5fa; font-size: 1.1rem; margin: 0 0 12px 0; }
+  nav.toc ol { margin: 0; padding-left: 22px; }
+  nav.toc ol ol { padding-left: 18px; margin-top: 6px; }
+  nav.toc li { margin-bottom: 6px; }
+  nav.toc a { color: #cbd5e1; text-decoration: none; }
+  nav.toc a:hover { color: #60a5fa; text-decoration: underline; }
+  h2 { color: #60a5fa; font-size: 1.5rem; margin-top: 48px; padding-bottom: 8px; border-bottom: 2px solid #334155; }
+  h3 { color: #93c5fd; font-size: 1.2rem; margin-top: 36px; }
+  h4 { color: #fbbf24; font-size: 1rem; margin-top: 24px; margin-bottom: 8px; }
+  p, li { color: #cbd5e1; }
+  strong { color: #f8fafc; }
+  code { background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+  pre { background: #1e293b; padding: 16px; border-radius: 8px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #60a5fa; padding: 12px 20px; margin: 16px 0; background: #1e293b; border-radius: 4px; font-style: italic; color: #e2e8f0; }
+  blockquote.ml { border-left-color: #a78bfa; }
+  blockquote.db { border-left-color: #22d3ee; }
+  blockquote.econ { border-left-color: #fbbf24; }
+  blockquote.quant { border-left-color: #f87171; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; background: #1e293b; border-radius: 8px; overflow: hidden; font-size: 0.9rem; }
+  th { background: #334155; color: #f8fafc; text-align: left; padding: 10px 12px; }
+  td { padding: 8px 12px; border-top: 1px solid #334155; }
+  tr:hover td { background: #273449; }
+  .callout { background: #1e293b; padding: 16px 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #60a5fa; }
+  .callout h4 { color: #f8fafc; margin-top: 0; }
+  .callout.critical { border-left-color: #ef4444; }
+  .callout.warn { border-left-color: #fbbf24; }
+  .callout.success { border-left-color: #10b981; }
+  .callout.info { border-left-color: #60a5fa; }
+  .accept { color: #10b981; font-weight: 700; }
+  .reject { color: #ef4444; font-weight: 700; }
+  .partial { color: #fbbf24; font-weight: 700; }
+  .expert-box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 20px; margin: 24px 0; }
+  .expert-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
+  .expert-avatar { width: 48px; height: 48px; border-radius: 50%; background: #475569; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #f8fafc; font-size: 1.2rem; }
+  .expert-avatar.ml { background: #a78bfa; }
+  .expert-avatar.db { background: #22d3ee; color: #0f172a; }
+  .expert-avatar.econ { background: #fbbf24; color: #0f172a; }
+  .expert-avatar.quant { background: #f87171; }
+  .expert-name { font-size: 1.1rem; font-weight: 700; color: #f8fafc; }
+  .expert-title { font-size: 0.85rem; color: #94a3b8; }
+  .comment-id { display: inline-block; background: #475569; color: #f8fafc; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 8px; }
+  .response { background: #0f172a; border-left: 3px solid #10b981; padding: 12px 16px; margin: 12px 0; border-radius: 4px; }
+  .response-header { color: #10b981; font-weight: 700; margin-bottom: 6px; font-size: 0.9rem; }
+  .priority-high { background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+  .priority-med { background: #fbbf24; color: #0f172a; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+  .priority-low { background: #10b981; color: #0f172a; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+  a.back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 16px; }
+  a.back-link:hover { text-decoration: underline; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid #334155; color: #64748b; font-size: 0.85rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<a href="/" class="back-link">← 홈으로</a>
+<a href="./wfr-summary-20260420.html" class="back-link" style="margin-left:16px;">← 요약 보고서로</a>
+
+<header>
+  <h1>WFR 독립 검토 패널 리뷰</h1>
+  <div class="subtitle">세계적 전문가 4명 가상 패널 × 설계자 반박 토론</div>
+  <div class="subtitle" style="margin-top:4px;">작성: 2026-04-20 | 대상: Walk-Forward Rolling Scoring v3 (2026-04-19 ~ 2026-04-20 실험)</div>
+</header>
+
+<div class="callout info">
+<h4>검토 목적</h4>
+<p>본 검토는 이전 2주간 실패 원인이었던 <strong>연구 설계 허점</strong>을 찾기 위한 목적. 각 전문가는 가장 엄격한 비판 제시, 설계자(Claude)는 반박 가능한 것은 반박, 수용해야 할 것은 개선 방향 제시.</p>
+</div>
+
+<nav class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li><a href="#panel">패널 소개</a></li>
+    <li><a href="#ml">[패널 1] ML 전문가 검토</a>
+      <ol>
+        <li><a href="#m1">M1. Multiple Testing</a></li>
+        <li><a href="#m2">M2. Top-K Data Leakage</a></li>
+        <li><a href="#m3">M3. Free Parameters</a></li>
+        <li><a href="#m4">M4. N_TOP=20 고정</a></li>
+        <li><a href="#m5">M5. ROBUST 기준 약함</a></li>
+      </ol>
+    </li>
+    <li><a href="#db">[패널 2] 금융 DB 전문가</a>
+      <ol>
+        <li><a href="#d1">D1. Q4 변환 실패 11%</a></li>
+        <li><a href="#d2">D2. 정정공시 처리</a></li>
+        <li><a href="#d3">D3. shares_adj 소급조정</a></li>
+        <li><a href="#d4">D4. 우선주 미매핑 6건</a></li>
+        <li><a href="#d5">D5. 수작업 샘플 검증</a></li>
+      </ol>
+    </li>
+    <li><a href="#econ">[패널 3] 경제학 교수</a>
+      <ol>
+        <li><a href="#e1">E1. Regime 임의 threshold</a></li>
+        <li><a href="#e2">E2. KR 2025 맥락 부족</a></li>
+        <li><a href="#e3">E3. Sharpe/IR 부재</a></li>
+        <li><a href="#e4">E4. Survivorship Bias</a></li>
+        <li><a href="#e5">E5. regime n_days 불균형</a></li>
+      </ol>
+    </li>
+    <li><a href="#quant">[패널 4] 퀀트 투자 권위자</a>
+      <ol>
+        <li><a href="#q1">Q1. α의 실전 환산 (수정됨)</a></li>
+        <li><a href="#q2">Q2. Size 편향 α</a></li>
+        <li><a href="#q3">Q3. 거래비용</a></li>
+        <li><a href="#q4">Q4. 섹터 집중</a></li>
+        <li><a href="#q5">Q5. Regime 신호 지연</a></li>
+      </ol>
+    </li>
+    <li><a href="#summary">종합 개선 방향 (우선순위 매트릭스)</a></li>
+    <li><a href="#decisions">결정 사항</a></li>
+  </ol>
+</nav>
+
+<h2 id="panel">1. 패널 소개</h2>
+<table>
+<thead><tr><th>#</th><th>전문가</th><th>가상 프로필</th><th>검토 관점</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><strong>ML 전문가</strong></td><td>통계학습 교수 (Hastie/Tibshirani 계열)</td><td>Selection bias, multiple testing, OOS 정합성</td></tr>
+<tr><td>2</td><td><strong>금융 DB 전문가</strong></td><td>금융 데이터 인프라 25년</td><td>PIT 무결성, 정정공시, 데이터 정확성</td></tr>
+<tr><td>3</td><td><strong>경제학 교수</strong></td><td>자산가격론 (Cochrane/Fama 계열)</td><td>Regime 타당성, statistical significance</td></tr>
+<tr><td>4</td><td><strong>퀀트 투자 권위자</strong></td><td>실전 퀀트 (López de Prado 계열)</td><td>α 실전성, 거래비용, 포트폴리오 제약</td></tr>
+</tbody></table>
+
+<h2 id="ml">2. [패널 1] ML 전문가 — Dr. Hastie-esque</h2>
+
+<div class="expert-box">
+<div class="expert-header">
+  <div class="expert-avatar ml">ML</div>
+  <div>
+    <div class="expert-name">ML 전문가 · 통계학습</div>
+    <div class="expert-title">Selection bias / Multiple testing / Nested CV</div>
+  </div>
+</div>
+
+<h3 id="m1"><span class="comment-id">M1</span>Multiple Testing — p-hacking 우려</h3>
+<blockquote class="ml">"10,626개 가중치 조합 × 5 horizon × 9 regime × 5 split = <strong>약 23.9M 가설 동시 검정</strong>. 'ROBUST 9/9' 외치는 조합이 우연히 나올 확률은 Bonferroni correction 후 거의 무조건 발생. <strong>White's Reality Check 또는 Hansen's SPA test 없이 +172.07%p를 발표하는 것은 학술 논문 reject 대상.</strong>"</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 수용</span></div>
+<ul>
+<li><strong>반박</strong>: 10,626 조합은 Step 2 한 번만 탐색. WFR 자체가 re-sampling 검정 구조 (IS 학습 → 미래 OOS 검증). 3 split 모두 양성이어야 ROBUST 판정 — 이미 다중 검증.</li>
+<li><strong>수용</strong>: White's Reality Check / SPA test 공식 유의성 검정 부재는 결함. <strong>block bootstrap 기반 SPA test 추가 필요.</strong></li>
+</ul>
+</div>
+
+<h3 id="m2"><span class="comment-id">M2</span>Top-K Data Leakage</h3>
+<blockquote class="ml">"Top-K 실험에서 Step 1 AVG_R 캐시 재사용. 캐시는 원래 IS 전체 학습된 값. Top-K의 Step 2가 그 best combo 기반 strat_sc로 재학습 → <strong>완전 독립 아님</strong>. Step 1도 K-fold로 재학습해야 진정한 nested CV."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용 (중요)</span></div>
+<p>정확한 지적. Step 1까지 재학습하면 계산 5배 증가. <strong>Top-K 실험을 nested CV 구조로 재설계 필요.</strong></p>
+</div>
+
+<h3 id="m3"><span class="comment-id">M3</span>Free Parameters 카운트</h3>
+<blockquote class="ml">"실제 free parameter: Step 1 (5 style × 5 indicator × 9 regime × 5 horizon) = <strong>1,125</strong>, Step 2 (5 style × 9 regime × 5 horizon) = <strong>225</strong>. 합계 <strong>1,350</strong>. IS 샘플 886 × 9 regime 평균 = 7,974 effective obs. <strong>샘플/파라미터 ≈ 5.9 (권고 30 이상)</strong> — overfitting 위험."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 반박</span></div>
+<ul>
+<li><strong>반박</strong>: 실제 0%가 아닌 의미있는 지표는 평균 2-3개 → 실질 DOF는 3 × 5 × 9 × 5 = <strong>675</strong>. 하지만 여전히 샘플 대비 많음.</li>
+<li><strong>수용</strong>: L2 정규화 미적용. Ridge 적용 검증 필요.</li>
+</ul>
+</div>
+
+<h3 id="m4"><span class="comment-id">M4</span>N_TOP=20 고정 하이퍼파라미터</h3>
+<blockquote class="ml">"TOP 20 종목 선정은 실전 portfolio 고려. 하지만 N_TOP을 5/10/50/100으로 변경 시 OOS α 변화 미검증."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용</span></div>
+<p>N_TOP sensitivity 실험 추가. 비용 선형 증가.</p>
+</div>
+
+<h3 id="m5"><span class="comment-id">M5</span>ROBUST 기준 3/3 양성 — 너무 약함</h3>
+<blockquote class="ml">"3 split 모두 +0.01%p라도 양성이면 ROBUST 라벨. <strong>통계적 유의성 검정 없이 기준이 약함</strong>. '3/3 양성 AND 평균 ≥ 2σ' 이중 조건 필요."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 수용</span></div>
+<p>ROBUST 기준 강화 (+ 2σ 조건) 합리적. 다만 σ 계산을 위해 split별 variance 산출 필요.</p>
+</div>
+</div>
+
+<h2 id="db">3. [패널 2] 금융 DB 전문가 — Mr. Data-integrity</h2>
+
+<div class="expert-box">
+<div class="expert-header">
+  <div class="expert-avatar db">DB</div>
+  <div>
+    <div class="expert-name">금융 DB 전문가</div>
+    <div class="expert-title">PIT 무결성 / 정정공시 / 파싱 정확성</div>
+  </div>
+</div>
+
+<h3 id="d1"><span class="comment-id">D1</span>Q4 변환 실패 11% (none=2498)</h3>
+<blockquote class="db">"KR Q4 변환: total=21829, fully=18957, partial=374, none=2498. <strong>2,498개가 변환 실패</strong> → TTM 계산 부분 누락. 어느 regime/시점에 영향주는지 매핑 없음."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 반박</span></div>
+<ul>
+<li><strong>반박</strong>: 2,498 실패는 주로 금융주/은행/보험 (IFRS 구조 상이). 별도 valuation 로직 대상.</li>
+<li><strong>수용</strong>: 섹터별 편중 여부 및 해당 종목 TOP 20 진입 빈도 분석 필요.</li>
+</ul>
+</div>
+
+<h3 id="d2"><span class="comment-id">D2</span>정정공시(amendment) 처리 불명확</h3>
+<blockquote class="db">"<code>filing_date &lt;= target_date</code> PIT 필터. 문제: DART 정정공시 시 기존 값이 <strong>덮어써짐</strong>. 원본 공시 시점과 정정 후 값 다를 수 있음. IS 학습에 사용되면 <strong>look-ahead bias</strong>. 검증 없음."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용 (중대)</span></div>
+<p>실제 위험. DART API amendment 이력 별도 수집 + 원본 공시 시점 보존 검증 필요. <strong>다음 단계 최우선 처리.</strong></p>
+</div>
+
+<h3 id="d3"><span class="comment-id">D3</span>shares_adj 소급조정 vs PIT</h3>
+<blockquote class="db">"<code>market_cap = price_t × shares_adj</code>. shares_adj는 미래 분할 소급 조정된 값. 과거 시점 실제 발행주식수와 다름 → <strong>look-ahead bias</strong>."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="reject">반박</span></div>
+<p>분할 소급 조정은 <strong>가격도 함께 조정</strong>되어 있으므로 <code>price_t × shares_adj</code>로 계산한 market_cap은 분자/분모 동시 조정 → <strong>bias 상쇄</strong>. 다만 자사주 매입/유상증자 등 non-분할 이벤트는 별도 검증 필요.</p>
+</div>
+
+<h3 id="d4"><span class="comment-id">D4</span>우선주 6개 미매핑</h3>
+<blockquote class="db">"KR 우선주 매핑 107/113 성공 → 6개 실패. 종목/원인/영향 문서화 없음. 성공률 95%로 퉁쳤는데 실제 영향 0일 수도, 클 수도 있음."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용 (경미)</span></div>
+<p>6개 종목 확인 후 스코어링 제외 여부 검증. 다만 영향 크지 않을 것으로 추정.</p>
+</div>
+
+<h3 id="d5"><span class="comment-id">D5</span>수작업 샘플 검증 미흡</h3>
+<blockquote class="db">"sanitize 규칙은 명시적 거짓만 잡음. 교묘한 거짓 (중복, EBITDA NULL div by 0 등)은 통과. <strong>무작위 100 종목 수작업 검증 없음.</strong>"</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 수용</span></div>
+<p><code>early_validation.py</code>, <code>expansion_validation.py</code>로 대형주 수십개 검증 완료. 100 full spot-check는 아님. <strong>무작위 50 종목 fund 값 NAVER/공시 원본 교차 확인 권고.</strong></p>
+</div>
+</div>
+
+<h2 id="econ">4. [패널 3] 경제학 교수 — Prof. Asset-pricing</h2>
+
+<div class="expert-box">
+<div class="expert-header">
+  <div class="expert-avatar econ">EC</div>
+  <div>
+    <div class="expert-name">경제학 교수 · 자산가격론</div>
+    <div class="expert-title">Regime 타당성 / Statistical significance / Survivorship</div>
+  </div>
+</div>
+
+<h3 id="e1"><span class="comment-id">E1</span>Regime 경제학적 근거 부재</h3>
+<blockquote class="econ">"5d ±1.0/-0.7%, 30d ±3/-2%, 90d ±6/-3%. 이 threshold의 경제학적 근거가 없음. Asymmetric down은 왜? <strong>Hamilton's Markov switching 또는 Ang-Bekaert 비교</strong> 없이 자의적. Threshold 변경 시 결과 완전히 달라질 수 있음."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 반박</span></div>
+<ul>
+<li><strong>반박</strong>: 5d/30d/90d <strong>다중 시계 조합</strong>이 robustness 확보 — 단일 threshold 의존 아님. 9 조합 중 일부 양성도 유의미.</li>
+<li><strong>수용</strong>: Markov switching 모델 비교 미수행. 후속 연구 과제.</li>
+</ul>
+</div>
+
+<h3 id="e2"><span class="comment-id">E2</span>KR 2025 요인 분석 부족</h3>
+<blockquote class="econ">"'이례적 상승'으로 묶어버림. 실제 요인: (1) 금융위 기업가치 제고 프로그램, (2) SK하이닉스/삼성 AI HBM 랠리, (3) 대주주 지배구조 개선. <strong>이 요인들은 moat/debt/growth 지표가 잡을 수 있었어야 함.</strong> 왜 못 잡았나?"</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용 (중요)</span></div>
+<ul>
+<li><strong>반박</strong>: 정확히 그 지표들이 잡아야 했는데 KR에서만 실패. 두 가설:
+  <ul><li>(a) KR 재무 데이터 quality 문제 (DART 파싱 한계) — <strong>D1과 연결</strong></li>
+  <li>(b) KR 시장 미세구조 차이</li></ul>
+</li>
+<li><strong>수용</strong>: "2025 특이"보다 <strong>DART quality 구간별 분석</strong> 후 재판단 필요.</li>
+</ul>
+</div>
+
+<h3 id="e3"><span class="comment-id">E3</span>Sharpe / Information Ratio 부재</h3>
+<blockquote class="econ">"α만 보고 ROBUST 외치는 건 부적절. <strong>α=+172%p에 σ=+300%p면 Sharpe 0.57 — 평범.</strong> 표준편차 미보고."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">전면 수용</span></div>
+<p>JSON에 std 계산 가능. <strong>즉시 Sharpe / IR 추가 계산 후 보고서 보강.</strong></p>
+</div>
+
+<h3 id="e4"><span class="comment-id">E4</span>Survivorship Bias <span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8rem;margin-left:8px;">확증됨 2026-04-21</span></h3>
+<blockquote class="econ">"2023-2026 OOS 기간 중 <strong>상장폐지 종목</strong>이 cache에서 제외됐는지? 평가 시점에 죽어있어 제외면 생존자 편향. 포함이면 -100% 반영 확인 필요."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용 (중요) → 🔴 확증</span></div>
+<p>2026-04-21 Survivorship-free 재빌드 + WFR S3 재실행으로 <strong>결정적으로 확증</strong>됨:</p>
+<ul>
+<li>기존 pipeline_cache는 is_active=1 (2,445개)만 포함 → 폐지 4,271개 제외</li>
+<li>Survivorship-free 재빌드 (6,713개) 후 WFR S3_2025 재실행 결과:
+<ul>
+<li>US-only 250d: <strong>+172.07 → -10.88%p</strong> (183%p 스윙)</li>
+<li>US-only 125d: <strong>+53.42 → -6.66%p</strong></li>
+<li>즉 기존 α 대부분이 survivorship bias였음</li>
+</ul>
+</li>
+<li>상세: <a href="./wfr-bias-correction-20260421.html" style="color:#60a5fa;">▶ WFR Bias Correction Report</a></li>
+</ul>
+</div>
+
+<h3 id="e5"><span class="comment-id">E5</span>regime n_days 불균형</h3>
+<blockquote class="econ">"KR S1 5d-down n=71, 90d-down n=52, 90d-sideways n=109. 단순 합산 평균 시 sideways 과대표현. 각 regime 동일 가중은 노이즈."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 반박</span></div>
+<ul>
+<li><strong>반박</strong>: aggregate는 각 regime 별 독립 평균 → 내부 표본은 해당 regime 집합으로 올바름. 9 regime 평균은 unweighted mean이지만 각 regime은 해당 조건의 실제 평균.</li>
+<li><strong>수용</strong>: n=5 미만 regime은 noise. <strong>"최소 n=30" 필터 추가 권고.</strong></li>
+</ul>
+</div>
+</div>
+
+<h2 id="quant">5. [패널 4] 퀀트 투자 권위자 — Dr. Real-world</h2>
+
+<div class="expert-box">
+<div class="expert-header">
+  <div class="expert-avatar quant">Q</div>
+  <div>
+    <div class="expert-name">퀀트 투자 권위자 · 실전</div>
+    <div class="expert-title">실전 α / 거래비용 / 포트폴리오 제약</div>
+  </div>
+</div>
+
+<h3 id="q1"><span class="comment-id">Q1</span>α의 실전 환산 <span class="priority-med" style="margin-left:8px;">수정됨</span></h3>
+<blockquote class="quant">"+172.07%p는 9 regime 조합 평균. 실전은 한 시점에 한 regime만 활성. <strong>9 regime 평균은 수학적 숫자이지 실현 가능 수익 아님.</strong>"</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="reject">검증 후 반박</span></div>
+<p><strong>이 지적은 부정확했음을 확인</strong>. 실제 OOS 평가 구조:</p>
+<ul>
+<li>매 OOS 날짜에 5d/30d/90d 각 rtype 활성 → 각 (rtype, label) 조합별로 별도 TOP 20 선정</li>
+<li>각 조합의 α는 "해당 regime 지속 추종한 실전 포트폴리오 α"에 대응</li>
+</ul>
+<p>n_days 가중 평균으로 실전 환산 결과:</p>
+<table>
+<thead><tr><th>rtype 전략</th><th>125d n 가중 α</th><th>250d n 가중 α</th></tr></thead>
+<tbody>
+<tr><td>5d rtype 추종</td><td>+51.74%p</td><td>+176.55%p</td></tr>
+<tr><td>30d rtype 추종</td><td>+50.89%p</td><td>+174.50%p</td></tr>
+<tr><td>90d rtype 추종</td><td>+55.80%p</td><td>+171.87%p</td></tr>
+<tr><td><strong>9 regime 단순 평균(보고서)</strong></td><td><strong>+53.42%p</strong></td><td><strong>+172.07%p</strong></td></tr>
+</tbody></table>
+<p>차이 ±5%p 이내 → <strong>9 regime 단순 평균이 실전 기대 α의 양호한 근사</strong>. Q1은 기각되었으나 Q2/Q3는 여전히 유효.</p>
+</div>
+
+<h3 id="q2"><span class="comment-id">Q2</span>동등가중 vs 시총가중 편향</h3>
+<blockquote class="quant">"TOP 20 <strong>동등가중</strong> 포트폴리오 vs <strong>시총가중</strong> 벤치마크. 동등가중은 소형주 편향 → 소형주 프리미엄 일부가 α로 잡힘. <strong>Size-neutral α 필요.</strong>"</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용</span></div>
+<p>Fama-French 3-factor 조정한 α (CAPM alpha 아닌 FF-alpha) 계산 필요.</p>
+</div>
+
+<h3 id="q3"><span class="comment-id">Q3</span>거래비용 무시</h3>
+<blockquote class="quant">"250d 보유라도 regime 변환 시 중간 리밸런싱 필요. <strong>왕복 0.3% × 연 4회 전환 = 2.4% 거래비용</strong>. +172%p에서 차감되어야 실전."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="accept">수용 (중요)</span></div>
+<p>리밸런싱 주기별 거래비용 차감 (0.2% round-trip × 회전율). 실전 순수익 재계산.</p>
+</div>
+
+<h3 id="q4"><span class="comment-id">Q4</span>섹터/산업 집중 위험</h3>
+<blockquote class="quant">"S3 agg 95 TOP 20이 전부 반도체라면? <strong>동질성 위험 점검 없음.</strong> Barra 리스크 팩터 조정 없음."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="partial">부분 수용</span></div>
+<p>TOP 20 섹터 분포 HHI 계산 + 상위 1-2 섹터 비중 체크 필요.</p>
+</div>
+
+<h3 id="q5"><span class="comment-id">Q5</span>Regime 신호 지연</h3>
+<blockquote class="quant">"regime 확정 시점 지연. 90d-up → 90d-sideways 바뀌려면 90일 지나야 인식. <strong>실전 적용 시 30일+ 지연</strong>. OOS에 지연 반영 안 됨."</blockquote>
+<div class="response">
+<div class="response-header">설계자 <span class="reject">반박</span></div>
+<p>90d regime은 90일 지난 값 사용이지만 신호는 <strong>매일 재계산</strong>. 당일 진입 기준 — lag 없음. OOS 평가도 동일 방식. 실전 투자 시 매매 의사결정 지연은 별도 문제이나 signal lag과 구분.</p>
+</div>
+</div>
+
+<h2 id="summary">6. 종합 개선 방향 (우선순위 매트릭스)</h2>
+
+<div class="callout critical">
+<h4>🔴 P0 (즉시 — 근본 결함)</h4>
+<ol>
+<li><strong>[Q3] 실전 거래비용 차감</strong>: 리밸런싱 회전율 × 0.2~0.3% round-trip → 실전 순 α 재계산</li>
+<li><strong>[D2] 정정공시 영향 검증</strong>: DART amendment 처리 검토</li>
+<li><strong>[E4] Survivorship bias 검증</strong>: 상장폐지 종목 포함 여부 명시</li>
+</ol>
+<p style="margin-top:12px;">(Q1은 검증 후 기각됨 — α 자체는 실전 대응 가능)</p>
+</div>
+
+<div class="callout warn">
+<h4>🟡 P1 (중요 — 해석 신뢰성)</h4>
+<ol start="4">
+<li><strong>[E3] Sharpe / IR 추가</strong>: α 외 분산 척도 필수</li>
+<li><strong>[Q2] FF size-adjusted α</strong>: 소형주 편향 배제</li>
+<li><strong>[M2] Top-K nested CV 재실행</strong>: Step 1부터 재학습</li>
+<li><strong>[E2] KR 2025 세분화 분석</strong>: DART quality vs 시장 특수성</li>
+</ol>
+</div>
+
+<div class="callout success">
+<h4>🟢 P2 (개선 — 학술 수준)</h4>
+<ol start="8">
+<li><strong>[M1] White's Reality Check / SPA test</strong></li>
+<li><strong>[M3] L2 정규화</strong>: Ridge 적용 검증</li>
+<li><strong>[M4] N_TOP sensitivity</strong>: 5/10/50/100 비교</li>
+<li><strong>[M5] ROBUST 기준 강화</strong>: +2σ 조건</li>
+<li><strong>[E5] regime n_days 최소 필터</strong> (n≥30)</li>
+<li><strong>[E1] Markov switching 비교</strong></li>
+<li><strong>[Q4] 섹터 집중 HHI</strong></li>
+<li><strong>[D1/D4/D5] DB quality 추가 검증</strong></li>
+</ol>
+</div>
+
+<h2 id="decisions">7. 결정 사항</h2>
+
+<div class="callout info">
+<h4>설계자 최종 결정 (2026-04-20)</h4>
+<ol>
+<li><strong>Q1 검증 완료</strong>: α는 실전 대응 가능. +172.07%p는 9 regime unweighted ≈ n 가중 (±5%p 이내). 근본 결함 아님.</li>
+<li><strong>KR/US Top-K 분석 진행</strong>: Q1 해결로 해석 신뢰성 확보 → 원 계획대로 진행.</li>
+<li><strong>병행: P0 항목 점진 적용</strong>:
+  <ul>
+  <li>Q3 거래비용: Top-K 결과 종합 시 추가</li>
+  <li>D2 정정공시: 독립 검증 트랙</li>
+  <li>E4 Survivorship: cache 종목 풀 점검</li>
+  </ul>
+</li>
+<li><strong>P1-P2는 KR/US Top-K 완료 후 단계적 적용.</strong></li>
+</ol>
+</div>
+
+<h3>이번 검토의 가치</h3>
+<p>4명 전문가 × 총 20개 지적 중:</p>
+<ul>
+<li>수용 / 부분 수용: <span class="accept">13건</span></li>
+<li>검증 후 반박 (기각): <span class="reject">3건 (Q1, D3, Q5)</span></li>
+<li>부분 반박 + 보강 필요: <span class="partial">4건</span></li>
+</ul>
+<p>특히 <strong>Q1의 현장 검증</strong>을 통해 "9 regime unweighted 평균이 실전 근사"임을 확인한 것이 큰 수확. 이전 2주간 실패 시 이런 검증 없이 α 해석을 오해했을 가능성 존재.</p>
+
+<footer>
+  <p>Walk-Forward Rolling Scoring v3 · 독립 검토 패널 · 2026-04-20</p>
+  <p><a href="./wfr-summary-20260420.html">▶ 요약</a> · <a href="./wfr-weights-20260420.html">▶ 가중치 상세</a> · <a href="./wfr-topk-20260420.html">▶ Top-K 실험</a></p>
+</footer>
+
+</div>
+</body>
+</html>

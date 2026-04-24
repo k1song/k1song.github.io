@@ -79,6 +79,7 @@
 <main class="main">
   <h1>K1 Note</h1>
   <p>StockDigging 관련 문서 모음 (사업·기술·리서치)</p>
+  <p style="font-size:0.85rem; color:#64748b; margin-top:4px;">v2 현행 문서는 <strong>Engineering v2</strong> 섹션을 참고. 이전 v1 문서는 Archive 섹션에 보관.</p>
 
   <h2>StockDigging</h2>
   <div id="category-container"></div>
@@ -88,9 +89,10 @@
 <script>
   // 카테고리별 설명
   const CATEGORY_META = {
-    'Business':    { ko: '사업·IR',    desc: '사업 모델, 투자자 커뮤니케이션, 비판 검토' },
-    'Engineering': { ko: '엔지니어링',   desc: '시스템 아키텍처, 스코어링 설계, 운영 플레이북' },
-    'Research':    { ko: '리서치·최적화', desc: '백테스트, ML 검증, 시장 국면별 전략' },
+    'Engineering v2':           { ko: '엔지니어링 v2 (현행)',     desc: 'Next.js 16 + FastAPI + SQLite v2 아키텍처, 배포·운영 가이드' },
+    'Business (v1 Archive)':    { ko: '사업·IR (v1 아카이브)',    desc: 'v1 사업 모델, 투자자 커뮤니케이션, 비판 검토' },
+    'Engineering (v1 Archive)': { ko: '엔지니어링 (v1 아카이브)', desc: 'v1 스코어링 설계, 운영 플레이북, 기술 아키텍처' },
+    'Research (v1 Archive)':    { ko: '리서치·최적화 (v1 아카이브)', desc: '백테스트, ML 검증, 시장 국면별 전략, WFR 분석' },
   };
 
   function renderCategorized() {

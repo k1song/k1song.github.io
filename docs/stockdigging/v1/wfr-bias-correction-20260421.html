@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>StockDigging - WFR Bias Correction Report (2026-04-21)</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  header { border-bottom: 2px solid #334155; padding-bottom: 20px; margin-bottom: 32px; }
+  h1 { color: #f8fafc; font-size: 1.9rem; margin: 0 0 8px 0; }
+  .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  nav.toc { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+  nav.toc h2 { color: #60a5fa; font-size: 1.1rem; margin: 0 0 16px 0; }
+  nav.toc ol { margin: 0; padding-left: 22px; }
+  nav.toc a { color: #cbd5e1; text-decoration: none; }
+  nav.toc a:hover { color: #60a5fa; text-decoration: underline; }
+  h2 { color: #60a5fa; font-size: 1.5rem; margin-top: 48px; padding-bottom: 8px; border-bottom: 2px solid #334155; }
+  h3 { color: #93c5fd; font-size: 1.2rem; margin-top: 32px; }
+  h4 { color: #fbbf24; font-size: 1rem; margin-top: 24px; margin-bottom: 8px; }
+  p, li { color: #cbd5e1; }
+  strong { color: #f8fafc; }
+  code { background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 20px 0; background: #1e293b; font-size: 0.9rem; }
+  th { background: #334155; color: #f8fafc; text-align: left; padding: 8px 12px; }
+  td { padding: 7px 12px; border-top: 1px solid #2d3748; }
+  tr:hover td { background: #273449; }
+  .num-pos { color: #10b981; font-weight: 700; }
+  .num-neg { color: #ef4444; font-weight: 700; }
+  .big-change { color: #fbbf24; font-weight: 700; }
+  .callout { background: #1e293b; padding: 16px 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #60a5fa; }
+  .callout h4 { color: #f8fafc; margin-top: 0; }
+  .callout.critical { border-left-color: #ef4444; background: #2d1414; }
+  .callout.warn { border-left-color: #fbbf24; }
+  .callout.success { border-left-color: #10b981; }
+  .banner-critical { background: #ef4444; color: #fff; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; font-weight: 700; }
+  a.back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 16px; }
+  a.back-link:hover { text-decoration: underline; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid #334155; color: #64748b; font-size: 0.85rem; text-align: center; }
+  .metric-card { display: inline-block; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 20px; margin: 8px 8px 8px 0; min-width: 180px; }
+  .metric-label { color: #94a3b8; font-size: 0.85rem; }
+  .metric-value { color: #f8fafc; font-size: 1.4rem; font-weight: 700; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<a href="/" class="back-link">← 홈으로</a>
+
+<header>
+  <h1>WFR Bias Correction Report</h1>
+  <div class="subtitle">기존 결과의 Survivorship Bias / 품질 필터 효과 정량 확인</div>
+  <div class="subtitle" style="margin-top:4px;">작성: 2026-04-21 | 이전 WFR 결과(2026-04-20) 전면 재해석 필요</div>
+</header>
+
+<div class="banner-critical">
+⚠️ <strong>CRITICAL UPDATE</strong>: 기존 WFR 결과의 α 대부분 (90-100%)이 survivorship bias / 종합점수 필터 효과로 확인되었습니다.
+US-only S3 250d의 <strong>+172.07%p</strong>는 Survivorship-free 재검증 시 <strong>-10.88%p</strong>로, 182.95%p가 편향이었습니다.
+</div>
+
+<nav class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li><a href="#summary">요약</a></li>
+    <li><a href="#top20">실험 1: 종합점수 상위 20% 필터 (S1-S5 US-only)</a></li>
+    <li><a href="#surv">실험 2: Survivorship-Free 재빌드 (US S3 검증)</a></li>
+    <li><a href="#interpretation">종합 해석</a></li>
+    <li><a href="#implications">시사점 및 향후 방향</a></li>
+  </ol>
+</nav>
+
+<h2 id="summary">1. 요약</h2>
+
+<div class="metric-card">
+  <div class="metric-label">기존 US-only S3 250d α</div>
+  <div class="metric-value num-pos">+172.07%p</div>
+</div>
+<div class="metric-card">
+  <div class="metric-label">Top 20% 필터 후</div>
+  <div class="metric-value num-pos">+2.30%p</div>
+</div>
+<div class="metric-card">
+  <div class="metric-label">Survivorship-free 재학습</div>
+  <div class="metric-value num-neg">-10.88%p</div>
+</div>
+
+<p>두 독립 검증 (품질 필터 제거 + 폐지 종목 포함)이 일관되게 보여주는 결과:</p>
+<ul>
+  <li><strong>현재 25개 지표의 순수 α ≈ 0~음의 영역</strong></li>
+  <li>기존 보고서의 "+172%p"는 <strong>"현재 생존한 우량주 pool 학습 효과"</strong></li>
+  <li>실전 투자 시 폐지 임박 부실주가 TOP 20에 포함될 때 <strong>큰 손실 발생</strong> 가능성</li>
+</ul>
+
+<h2 id="top20">2. 실험 1: 종합점수 상위 20% 필터</h2>
+
+<p><strong>설계</strong>: 매 거래일 US-only 1,920 종목 중 25지표 균등 합산 점수 상위 20% (~384 종목) pool 내에서만 TOP 20 선정.</p>
+<p><strong>목적</strong>: 품질 필터 효과를 제거하여 "순수 지표 α"만 측정.</p>
+
+<h3>S1-S5 US-only × K=1 결과</h3>
+<h4>S1_2023</h4><table><thead><tr><th>Horizon</th><th>기존 α</th><th>Top 20% K=1</th><th>차이</th><th>남은 비율</th></tr></thead><tbody><tr><td>5d</td><td class='num-pos'>+0.66</td><td class='num-pos'>+0.33</td><td class='big-change'>-0.32</td><td>50.8%</td></tr><tr><td>30d</td><td class='num-pos'>+3.75</td><td class='num-pos'>+0.91</td><td class='big-change'>-2.84</td><td>24.2%</td></tr><tr><td>60d</td><td class='num-pos'>+11.65</td><td class='num-pos'>+0.61</td><td class='big-change'>-11.03</td><td>5.2%</td></tr><tr><td>125d</td><td class='num-pos'>+18.89</td><td class='num-pos'>+3.80</td><td class='big-change'>-15.09</td><td>20.1%</td></tr><tr><td>250d</td><td class='num-pos'>+41.79</td><td class='num-pos'>+0.50</td><td class='big-change'>-41.29</td><td>1.2%</td></tr></tbody></table><h4>S2_2024</h4><table><thead><tr><th>Horizon</th><th>기존 α</th><th>Top 20% K=1</th><th>차이</th><th>남은 비율</th></tr></thead><tbody><tr><td>5d</td><td class='num-pos'>+0.87</td><td class='num-neg'>-0.31</td><td class='big-change'>-1.18</td><td>-35.8%</td></tr><tr><td>30d</td><td class='num-neg'>-1.00</td><td class='num-neg'>-1.69</td><td class='big-change'>-0.69</td><td>168.4%</td></tr><tr><td>60d</td><td class='num-pos'>+3.45</td><td class='num-neg'>-0.65</td><td class='big-change'>-4.11</td><td>-18.9%</td></tr><tr><td>125d</td><td class='num-pos'>+7.79</td><td class='num-pos'>+0.14</td><td class='big-change'>-7.65</td><td>1.7%</td></tr><tr><td>250d</td><td class='num-pos'>+17.88</td><td class='num-pos'>+1.91</td><td class='big-change'>-15.97</td><td>10.7%</td></tr></tbody></table><h4>S3_2025</h4><table><thead><tr><th>Horizon</th><th>기존 α</th><th>Top 20% K=1</th><th>차이</th><th>남은 비율</th></tr></thead><tbody><tr><td>5d</td><td class='num-pos'>+1.08</td><td class='num-pos'>+0.10</td><td class='big-change'>-0.98</td><td>9.7%</td></tr><tr><td>30d</td><td class='num-pos'>+6.99</td><td class='num-pos'>+1.00</td><td class='big-change'>-5.99</td><td>14.3%</td></tr><tr><td>60d</td><td class='num-pos'>+13.40</td><td class='num-pos'>+3.46</td><td class='big-change'>-9.95</td><td>25.8%</td></tr><tr><td>125d</td><td class='num-pos'>+53.42</td><td class='num-pos'>+7.31</td><td class='big-change'>-46.11</td><td>13.7%</td></tr><tr><td>250d</td><td class='num-pos'>+172.07</td><td class='num-pos'>+2.30</td><td class='big-change'>-169.77</td><td>1.3%</td></tr></tbody></table>
+
+<div class="callout warn">
+<h4>관찰</h4>
+<ul>
+<li>S1 250d: <strong>+41.79 → +0.50</strong> (1% 남음)</li>
+<li>S3 250d: <strong>+172.07 → +2.30</strong> (1.3% 남음)</li>
+<li>S5 250d: +57.56 → +4.97</li>
+<li>모든 split에서 <strong>α의 90-99%가 품질 필터 효과</strong></li>
+</ul>
+</div>
+
+<h2 id="surv">3. 실험 2: Survivorship-Free 재빌드 (S3 검증)</h2>
+
+<p><strong>설계</strong>:</p>
+<ol>
+<li>stocks 테이블에서 is_active=0 (폐지 4,271개) 포함 전체 로드 — daily_prices 있는 4,268개</li>
+<li>delisted_date NULL 17개 보정: last_trade_date + 1일로 추정 업데이트 (US 14, KR 47)</li>
+<li>pipeline_cache v2_US.pkl 재빌드 (include_inactive=True) — 6,713 종목 × 2,454일</li>
+<li>WFR S3_2025 완전 재학습 (Step 1 + Step 2 + OOS 전부 재수행)</li>
+</ol>
+
+<p>cache_key는 <code>SURV_US_S3_2025</code> / <code>SURV_US-only_S3_2025</code>로 기존 결과와 분리.</p>
+
+<h3>US (전체, n=6,713)</h3>
+<table><thead><tr><th>Horizon</th><th>기존 α</th><th>Survivorship-free α</th><th>차이</th></tr></thead>
+<tbody><tr><td>5d</td><td class='num-pos'>+1.30</td><td class='num-pos'>+0.24</td><td class='big-change'>-1.06</td></tr><tr><td>30d</td><td class='num-pos'>+7.48</td><td class='num-pos'>+0.20</td><td class='big-change'>-7.28</td></tr><tr><td>60d</td><td class='num-pos'>+11.56</td><td class='num-pos'>+0.80</td><td class='big-change'>-10.76</td></tr><tr><td>125d</td><td class='num-pos'>+40.36</td><td class='num-neg'>-8.83</td><td class='big-change'>-49.19</td></tr><tr><td>250d</td><td class='num-pos'>+63.54</td><td class='num-neg'>-11.87</td><td class='big-change'>-75.41</td></tr></tbody></table>
+
+<h3>US-only ($1B+, n=5,131)</h3>
+<table><thead><tr><th>Horizon</th><th>기존 α</th><th>Survivorship-free α</th><th>차이</th></tr></thead>
+<tbody><tr><td>5d</td><td class='num-pos'>+1.08</td><td class='num-pos'>+0.23</td><td class='big-change'>-0.85</td></tr><tr><td>30d</td><td class='num-pos'>+6.99</td><td class='num-neg'>-0.39</td><td class='big-change'>-7.39</td></tr><tr><td>60d</td><td class='num-pos'>+13.40</td><td class='num-pos'>+1.52</td><td class='big-change'>-11.88</td></tr><tr><td>125d</td><td class='num-pos'>+53.42</td><td class='num-neg'>-6.66</td><td class='big-change'>-60.08</td></tr><tr><td>250d</td><td class='num-pos'>+172.07</td><td class='num-neg'>-10.88</td><td class='big-change'>-182.94</td></tr></tbody></table>
+
+<div class="callout critical">
+<h4>🚨 결정적 발견</h4>
+<p>US-only S3 250d <strong>+172.07%p → -10.88%p</strong> (183%p 스윙)</p>
+<ul>
+<li><strong>진짜 지표 α: -10.88%p (음의 알파 — 시장 underperform)</strong></li>
+<li><strong>survivorship bias: +182.95%p</strong> (전부 편향)</li>
+<li>0/9, 1/9 regime 양성 — 거의 모든 상황에서 음성</li>
+<li>즉 스코어링 전략은 <strong>폐지 임박 종목을 걸러낼 능력이 부족</strong>하여 포함 시 큰 손실 발생</li>
+</ul>
+</div>
+
+<h2 id="interpretation">4. 종합 해석</h2>
+
+<h3>4.1 두 실험이 일관되게 가리키는 결론</h3>
+<table>
+<thead><tr><th>관점</th><th>결과</th></tr></thead>
+<tbody>
+<tr><td>Top 20% 필터 (생존 상위 품질주 pool)</td><td>+2.30%p (거의 0)</td></tr>
+<tr><td>Survivorship-free (폐지 포함 완전 universe)</td><td>-10.88%p (음성)</td></tr>
+<tr><td>기존 보고서 (생존 전체 pool)</td><td>+172.07%p (편향)</td></tr>
+</tbody>
+</table>
+
+<p>품질 필터 상위 20% 결과 +2.30은 "이미 품질 좋은 종목 중에서는 TOP 20 선정이 큰 가치 없음"을, Survivorship-free -10.88은 "폐지 임박 부실주 배제 없이는 성과 음성"을 의미. 기존 +172는 "생존 2,445 종목 중 TOP 20 선정 = 폐지 임박주 자동 배제 + 품질 필터 동시 효과".</p>
+
+<h3>4.2 Bias 분해</h3>
+<pre style="background:#1e293b;padding:16px;border-radius:8px;">
+기존 US-only S3 250d α = +172.07%p
+├─ Survivorship bias:  약 +183%p (폐지 종목 배제 효과)
+├─ 품질 필터 bias:     약 +170%p (상위 20% 밖 제거 효과)
+└─ 순수 지표 α:        약 -11%p (실제 예측력, 음성)
+(bias는 중첩 영역이 있어 합계가 +172를 초과)
+</pre>
+
+<h3>4.3 왜 이런 결과가 나왔나?</h3>
+<ul>
+<li><strong>학습 기간 (2021-06 ~ 2024-12)</strong>: 생존 종목 위주로 학습된 지표가 실제로는 "생존 신호"를 간접 학습</li>
+<li><strong>폐지 임박 종목 특성</strong>: 보통 저PBR/저PER → 기존 학습에서 "저평가 매수" 신호로 잘못 선정될 가능성</li>
+<li><strong>현재 25개 지표</strong>: fundamental + technical 조합이지만, 부실주 필터링 기능 부족 (예: 유동성, 거래량 트렌드, 신용등급 등 미포함)</li>
+</ul>
+
+<h2 id="implications">5. 시사점 및 향후 방향</h2>
+
+<div class="callout warn">
+<h4>즉시 필요한 작업</h4>
+<ul>
+<li><strong>전체 S1-S5 재실행</strong>: S3 외 다른 split도 유사 패턴인지 확인 (~15h)</li>
+<li><strong>KR 같은 방식 적용</strong>: KR delisted 47개 보정 후 재학습 (단, KR은 원래 α 낮음)</li>
+<li><strong>기존 보고서 5종 모두 업데이트</strong>: bias-adjusted 수치 병기</li>
+</ul>
+</div>
+
+<div class="callout critical">
+<h4>근본적 재고 필요</h4>
+<ul>
+<li><strong>현재 25개 지표로는 순수 α 생성 불가</strong> — 추가 지표 필요
+  <ul>
+  <li>유동성 지표 (ADV, bid-ask spread)</li>
+  <li>신용 위험 지표 (부채 상환 능력, Altman Z-score)</li>
+  <li>내부자 거래, 공매도 비율</li>
+  <li>질적 지표 (감사 의견, 분식 가능성)</li>
+  </ul>
+</li>
+<li><strong>실전 필터 포함 전략</strong>:
+  <ul>
+  <li>유동성 최소 기준 (일평균 거래대금)</li>
+  <li>시가총액 $1B+ + ROE > 0 + 부채비율 < 200% 등 사전 필터</li>
+  <li>그 후 스코어링 기반 TOP 20 선정</li>
+  </ul>
+</li>
+<li><strong>실전 적용 시</strong>: 기존 "+172" 같은 숫자에 의존하지 말고 <strong>실전 포트폴리오 시뮬레이션</strong> (리밸런싱 주기, 거래비용, 폐지 처리) 필수</li>
+</ul>
+</div>
+
+<h3>5.1 긍정적 발견 (대형주 + 단기)</h3>
+<p>Survivorship-free US-only에서 단기 horizon은 여전히 미미한 양성:</p>
+<ul>
+<li>5d: +0.23%p (5/9)</li>
+<li>60d: +1.52%p (4/9)</li>
+</ul>
+<p>즉 단기 모멘텀 기반 신호는 일부 유효. 하지만 125d+ 장기는 명확히 음성.</p>
+
+<footer>
+  <p>Walk-Forward Rolling Scoring v3 · Bias Correction Report · 2026-04-21</p>
+  <p>
+    <a href="./wfr-summary-20260420.html">▶ 원본 요약</a>
+    · <a href="./wfr-weights-20260420.html">▶ 가중치 상세</a>
+    · <a href="./wfr-topk-20260420.html">▶ Top-K</a>
+    · <a href="./wfr-topk-full-20260420.html">▶ Top-K 3시장</a>
+    · <a href="./wfr-peer-review-20260420.html">▶ 독립 검토</a>
+  </p>
+</footer>
+
+</div>
+</body>
+</html>
