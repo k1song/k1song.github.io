@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   {
     category: 'Engineering v2',
     items: [
-      { title: '운영 플레이북 v2', href: '/docs/stockdigging/ops-playbook.html',
+      { title: '운영 플레이북 v2 🔒', href: '/docs/stockdigging/ops-playbook.html',
         desc: '배포 절차, 크론 스케줄, 서버 명령어, 트러블슈팅 — v2 기준 실전 운영 가이드', date: '2026-04-25' },
       { title: '기술 아키텍처 v2 🔒', href: '/docs/stockdigging/tech-review.html',
         desc: 'Next.js 16 + FastAPI + SQLite 전체 아키텍처, 스택 선택 근거, 기술 부채 로드맵', date: '2026-04-25' },

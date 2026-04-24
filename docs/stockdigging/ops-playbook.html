@@ -5,10 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <title>StockDigging v2 — 운영 플레이북</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.8; display: flex; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #0f172a; min-height: 100vh; display: flex; }
+
+  #lock-screen { width: 100%; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100vh; }
+
+  #app { display: none; background: #f8fafc; color: #1e293b; line-height: 1.8; width: 100%; min-height: 100vh; }
 
   .sidebar {
     width: 260px; min-height: 100vh; background: #fff; border-right: 1px solid #e2e8f0;
@@ -78,6 +84,26 @@
 </head>
 <body>
 
+<!-- 잠금 화면 -->
+<div id="lock-screen">
+  <div style="text-align:center; color:#fff; margin-bottom:32px;">
+    <div style="font-size:2rem; font-weight:900; margin-bottom:8px;">StockDigging v2</div>
+    <div style="color:#94a3b8; font-size:0.95rem;">운영 플레이북</div>
+  </div>
+  <div style="background:#1e293b; border:1px solid #334155; border-radius:12px; padding:32px; width:340px;">
+    <input id="pw-input" type="password" placeholder="Password"
+      style="width:100%; padding:12px 16px; border:1px solid #475569; border-radius:8px;
+             background:#0f172a; color:#fff; font-size:1rem; outline:none; margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter')unlock()">
+    <button onclick="unlock()"
+      style="width:100%; padding:12px; background:#3b82f6; color:#fff; border:none;
+             border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer;">Open</button>
+    <div id="pw-error" style="color:#ef4444; font-size:0.85rem; margin-top:8px; text-align:center; display:none;">Incorrect password</div>
+  </div>
+</div>
+
+<!-- 실제 콘텐츠 -->
+<div id="app">
 <nav class="sidebar"></nav>
 
 <div class="page-body">
@@ -614,5 +640,26 @@ curl http://127.0.0.1:8000/api/validation?code=XXXXX  # 404면 data.items=undefi
 </div>
 </div><!-- page-body -->
 <script src="/nav.js"></script>
+</div><!-- #app -->
+
+<script>
+function unlock() {
+  const pw = document.getElementById('pw-input').value;
+  if (CryptoJS.SHA256(pw).toString() === CryptoJS.SHA256("song_240408").toString()) {
+    sessionStorage.setItem('sd_ops_v2_unlocked', '1');
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+  }
+}
+
+(function() {
+  if (sessionStorage.getItem('sd_ops_v2_unlocked') === '1') {
+    document.getElementById('lock-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+  }
+})();
+</script>
 </body>
 </html>
